@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
+import { GeistSans } from "geist/font/sans";
 
+import { cn } from "@/lib/utils";
 import { L10Header } from "@/components/l10/l10-header";
+import { L10Nav } from "@/components/l10/l10-nav";
 import { L10ThemeProvider } from "@/components/l10/theme-provider";
 
 export const metadata: Metadata = {
@@ -14,12 +17,18 @@ export default function L10Layout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <L10ThemeProvider>
-      <div className="bg-background flex min-h-svh flex-col">
+      <div
+        className={cn(
+          "l10-theme bg-background text-foreground flex min-h-svh flex-col",
+          GeistSans.variable,
+        )}
+      >
         <L10Header />
-        <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-6 sm:px-6">
-          {children}
+        <L10Nav />
+        <main className="container mx-auto flex flex-1 flex-col gap-4 p-4">
+          <div className="min-h-[calc(100vh-140px)]">{children}</div>
         </main>
-        <footer className="text-muted-foreground mx-auto w-full max-w-7xl border-t px-4 py-4 text-xs sm:px-6">
+        <footer className="text-muted-foreground container mx-auto px-4 py-4 text-xs">
           Loki Ventures · L10 Platform · Meets weekly
         </footer>
       </div>
