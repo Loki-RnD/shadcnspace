@@ -5,6 +5,7 @@ import {
   ListChecks,
   TriangleAlert,
   Presentation,
+  ShieldCheck,
   type LucideIcon,
 } from "lucide-react";
 
@@ -13,6 +14,8 @@ export interface L10NavItem {
   href: string;
   icon: LucideIcon;
   description: string;
+  /** only shown to system_role = super_admin */
+  adminOnly?: boolean;
 }
 
 export const l10NavItems: L10NavItem[] = [
@@ -51,5 +54,12 @@ export const l10NavItems: L10NavItem[] = [
     href: "/l10/meeting",
     icon: Presentation,
     description: "Run the Level 10",
+  },
+  {
+    title: "Admin",
+    href: "/l10/admin",
+    icon: ShieldCheck,
+    description: "Users, roles & access",
+    adminOnly: true,
   },
 ];

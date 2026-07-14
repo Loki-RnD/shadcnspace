@@ -4,16 +4,20 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 import { cn } from "@/lib/utils";
+import { currentUser } from "./members";
 import { l10NavItems } from "./nav-items";
 
 export function L10Nav() {
   const pathname = usePathname();
+  const items = l10NavItems.filter(
+    (item) => !item.adminOnly || currentUser.systemRole === "super_admin",
+  );
 
   return (
-    <div className="bg-background border-border sticky top-0 z-40 container mx-auto mt-2 rounded-lg border px-2 py-2">
+    <div className="bg-background border-border l10-container sticky top-0 z-40 mt-2 rounded-lg border px-2 py-2">
       <nav aria-label="L10 sections">
         <ul className="flex items-center gap-1 overflow-x-auto md:flex-nowrap">
-          {l10NavItems.map((item) => {
+          {items.map((item) => {
             const active =
               item.href === "/l10"
                 ? pathname === "/l10"

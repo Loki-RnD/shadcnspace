@@ -23,7 +23,7 @@ const kpis = [
 
 export default function L10DashboardPage() {
   return (
-    <div className="grid grid-cols-12 gap-4">
+    <div className="grid grid-cols-12 gap-6">
       <Card className="col-span-12">
         <CardContent className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex flex-col gap-1">
@@ -63,7 +63,7 @@ export default function L10DashboardPage() {
       ))}
 
       {l10NavItems
-        .filter((item) => item.href !== "/l10")
+        .filter((item) => item.href !== "/l10" && !item.adminOnly)
         .map((item) => (
           <Link
             key={item.href}

@@ -10,7 +10,7 @@ export function ModulePlaceholder({
   note: string;
 }) {
   return (
-    <div className="grid grid-cols-12 gap-4">
+    <div className="grid grid-cols-12 gap-6">
       <Card className="col-span-12">
         <CardContent className="flex flex-col gap-1">
           <p className="text-card-foreground text-lg font-medium">{title}</p>

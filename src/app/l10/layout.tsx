@@ -19,18 +19,22 @@ export default function L10Layout({
     <L10ThemeProvider>
       <div
         className={cn(
-          "l10-theme bg-background text-foreground flex min-h-svh flex-col",
+          "l10-theme bg-background text-foreground flex min-h-svh w-full",
           GeistSans.variable,
         )}
       >
-        <L10Header />
-        <L10Nav />
-        <main className="container mx-auto flex flex-1 flex-col gap-4 p-4">
-          <div className="min-h-[calc(100vh-140px)]">{children}</div>
+        <main className="bg-background outline-border relative m-2 flex w-full flex-1 flex-col overflow-clip rounded-xl outline">
+          <L10Header />
+          <L10Nav />
+          <div className="flex flex-1 flex-col gap-4 p-4">
+            <div className="l10-container xl:mt-3">
+              <div className="min-h-[calc(100vh-140px)]">{children}</div>
+            </div>
+          </div>
+          <footer className="text-muted-foreground l10-container px-4 py-4 text-xs">
+            Loki Ventures · L10 Platform · Meets weekly
+          </footer>
         </main>
-        <footer className="text-muted-foreground container mx-auto px-4 py-4 text-xs">
-          Loki Ventures · L10 Platform · Meets weekly
-        </footer>
       </div>
     </L10ThemeProvider>
   );

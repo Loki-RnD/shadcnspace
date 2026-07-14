@@ -42,7 +42,7 @@ function ThemeToggle() {
 
 export function L10Header() {
   return (
-    <header className="container mx-auto">
+    <header className="l10-container">
       <div className="flex flex-wrap items-center justify-between p-2">
         <div className="flex items-center gap-2">
           <Link href="/l10" className="flex items-center gap-2">
@@ -97,8 +97,8 @@ export function L10Header() {
               <DropdownMenuLabel>
                 <div className="flex flex-col">
                   <span>{currentUser.name}</span>
-                  <span className="text-muted-foreground text-xs font-normal capitalize">
-                    {currentUser.role} · {currentUser.area}
+                  <span className="text-muted-foreground text-xs font-normal">
+                    {currentUser.companyRole} · {currentUser.area}
                   </span>
                 </div>
               </DropdownMenuLabel>
