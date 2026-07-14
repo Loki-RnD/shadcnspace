@@ -7,6 +7,8 @@ import { Bell, Moon, Search, Sun, Zap } from "lucide-react";
 
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+import { currentUser } from "@/components/l10/members";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -84,17 +86,19 @@ export function L10Header() {
               }
             >
               <Avatar className="size-7">
-                <AvatarFallback className="text-xs font-medium">
-                  DB
+                <AvatarFallback
+                  className={cn("text-xs font-medium", currentUser.color)}
+                >
+                  {currentUser.initials}
                 </AvatarFallback>
               </Avatar>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-52">
               <DropdownMenuLabel>
                 <div className="flex flex-col">
-                  <span>Dennis Babu</span>
-                  <span className="text-muted-foreground text-xs font-normal">
-                    Integrator
+                  <span>{currentUser.name}</span>
+                  <span className="text-muted-foreground text-xs font-normal capitalize">
+                    {currentUser.role} · {currentUser.area}
                   </span>
                 </div>
               </DropdownMenuLabel>

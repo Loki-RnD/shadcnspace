@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
 
+import { MemberStack } from "@/components/l10/member-avatar";
+import { l10Members } from "@/components/l10/members";
 import { l10NavItems } from "@/components/l10/nav-items";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -32,7 +34,15 @@ export default function L10DashboardPage() {
               Weekly health across the Level 10 disciplines
             </p>
           </div>
-          <Badge variant="outline">Week of 13 Jul 2026</Badge>
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2">
+              <MemberStack members={l10Members} max={5} />
+              <span className="text-muted-foreground text-xs">
+                {l10Members.length} members
+              </span>
+            </div>
+            <Badge variant="outline">Week of 13 Jul 2026</Badge>
+          </div>
         </CardContent>
       </Card>
 
@@ -70,6 +80,12 @@ export default function L10DashboardPage() {
                 </div>
                 <CardTitle className="mt-2 text-base">{item.title}</CardTitle>
                 <CardDescription>{item.description}</CardDescription>
+                <MemberStack
+                  members={l10Members}
+                  max={4}
+                  size="sm"
+                  className="mt-2"
+                />
               </CardHeader>
             </Card>
           </Link>
