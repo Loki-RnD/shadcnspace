@@ -9,7 +9,9 @@ import { Bell, Moon, Search, Sun } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { currentUser } from "@/components/l10/members";
+import { memberVisuals } from "@/components/l10/members";
+import { logout } from "@/app/l10/login/actions";
+import type { SessionUser } from "@/lib/l10/auth/token";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -41,18 +43,28 @@ function ThemeToggle() {
   );
 }
 
-export function L10Header() {
+export function L10Header({ user }: { user: SessionUser }) {
+  const { initials, color } = memberVisuals(user.email, user.name);
+
   return (
     <header className="l10-container">
       <div className="flex flex-wrap items-center justify-between p-2">
         <div className="flex items-center gap-2">
           <Link href="/l10" className="flex items-center gap-2.5">
             <Image
-              src="/images/l10/eos-logo.svg"
+              src="/images/l10/eos-logo-plain.png"
               alt="EOS"
-              width={120}
+              width={84}
               height={32}
-              className="h-8 w-auto"
+              className="h-8 w-auto dark:hidden"
+              priority
+            />
+            <Image
+              src="/images/l10/eos-logo-dark.png"
+              alt="EOS"
+              width={84}
+              height={32}
+              className="hidden h-8 w-auto dark:block"
               priority
             />
             <span className="text-muted-foreground border-border border-s ps-2.5 text-base font-semibold tracking-tight">

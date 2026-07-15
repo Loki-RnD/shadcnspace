@@ -86,4 +86,25 @@ export const l10Members: L10Member[] = [
   },
 ];
 
-export const currentUser = l10Members[0];
+/** Avatar visuals for a signed-in user: roster colors when the email is
+ *  known, otherwise a stable palette pick derived from the email. */
+export function memberVisuals(email: string, name: string) {
+  const member = l10Members.find(
+    (m) => m.email.toLowerCase() === email.toLowerCase(),
+  );
+  if (member) return { initials: member.initials, color: member.color };
+
+  const initials = name
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0]!.toUpperCase())
+    .join("");
+  const palette = l10Members.map((m) => m.color);
+  let hash = 0;
+  for (const ch of email) hash = (hash * 31 + ch.charCodeAt(0)) | 0;
+  return {
+    initials: initials || "?",
+    color: palette[Math.abs(hash) % palette.length],
+  };
+}
