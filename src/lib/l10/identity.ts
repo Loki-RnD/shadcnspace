@@ -23,6 +23,9 @@ export interface AdminUserRow {
   companies: string[];
   departments: string[];
   sub_departments: string[];
+  business_ids: string[];
+  department_ids: string[];
+  sub_department_ids: string[];
 }
 
 export async function listUsers(): Promise<AdminUserRow[]> {
@@ -45,7 +48,16 @@ export async function listUsers(): Promise<AdminUserRow[]> {
         select array_agg(distinct s.name)
         from core.user_sub_department_access sa
         join core.sub_departments s on s.id = sa.sub_department_id
-        where sa.user_id = u.id), '{}') as sub_departments
+        where sa.user_id = u.id), '{}') as sub_departments,
+      coalesce((
+        select array_agg(ba.business_id::text)
+        from core.user_business_access ba where ba.user_id = u.id), '{}') as business_ids,
+      coalesce((
+        select array_agg(da.department_id::text)
+        from core.user_department_access da where da.user_id = u.id), '{}') as department_ids,
+      coalesce((
+        select array_agg(sa.sub_department_id::text)
+        from core.user_sub_department_access sa where sa.user_id = u.id), '{}') as sub_department_ids
     from core.users u
     order by u.user_code
   `;

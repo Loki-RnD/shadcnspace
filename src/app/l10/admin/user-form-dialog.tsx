@@ -1,8 +1,7 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { toast } from "sonner";
-import { UserPlus } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -12,18 +11,28 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { NativeSelect } from "@/components/ui/native-select";
 import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
-import type { OrgBusiness } from "@/lib/l10/identity";
-import { createUser } from "./actions";
+import type { AdminUserRow, OrgBusiness } from "@/lib/l10/identity";
+import { createUser, updateUser } from "./actions";
 
-export function CreateUserDialog({ org }: { org: OrgBusiness[] }) {
-  const [open, setOpen] = useState(false);
+export function UserFormDialog({
+  org,
+  user,
+  open,
+  onOpenChange,
+}: {
+  org: OrgBusiness[];
+  /** undefined = create mode */
+  user?: AdminUserRow;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+}) {
+  const editing = Boolean(user);
   const [pending, startTransition] = useTransition();
 
   const [fullName, setFullName] = useState("");
@@ -37,6 +46,21 @@ export function CreateUserDialog({ org }: { org: OrgBusiness[] }) {
   const [departmentIds, setDepartmentIds] = useState<string[]>([]);
   const [subDepartmentIds, setSubDepartmentIds] = useState<string[]>([]);
 
+  // (Re)hydrate form state whenever the dialog opens
+  useEffect(() => {
+    if (!open) return;
+    setFullName(user?.full_name ?? "");
+    setEmail(user?.email ?? "");
+    setPassword("");
+    setSystemRole(user?.system_role ?? "hod");
+    setCompanyRole(user?.company_role ?? "HOD");
+    setBusinessIds(user?.business_ids ?? []);
+    setDeptAll(user?.dept_access_all ?? false);
+    setSubDeptAll(user?.sub_dept_access_all ?? false);
+    setDepartmentIds(user?.department_ids ?? []);
+    setSubDepartmentIds(user?.sub_department_ids ?? []);
+  }, [open, user]);
+
   const toggle = (list: string[], id: string) =>
     list.includes(id) ? list.filter((x) => x !== id) : [...list, id];
 
@@ -44,7 +68,7 @@ export function CreateUserDialog({ org }: { org: OrgBusiness[] }) {
 
   function submit() {
     startTransition(async () => {
-      const res = await createUser({
+      const payload = {
         fullName,
         email,
         password,
@@ -55,13 +79,13 @@ export function CreateUserDialog({ org }: { org: OrgBusiness[] }) {
         subDeptAccessAll: subDeptAll,
         departmentIds,
         subDepartmentIds,
-      });
+      };
+      const res = editing
+        ? await updateUser({ ...payload, userId: user!.id })
+        : await createUser(payload);
       if (res.ok) {
-        toast.success(`User ${fullName} created`);
-        setOpen(false);
-        setFullName(""); setEmail(""); setPassword("");
-        setBusinessIds([]); setDepartmentIds([]); setSubDepartmentIds([]);
-        setDeptAll(false); setSubDeptAll(false);
+        toast.success(editing ? `${fullName} updated` : `User ${fullName} created`);
+        onOpenChange(false);
       } else {
         toast.error(res.error);
       }
@@ -69,47 +93,52 @@ export function CreateUserDialog({ org }: { org: OrgBusiness[] }) {
   }
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger render={<Button size="sm" />}>
-        <UserPlus className="size-4" /> Add user
-      </DialogTrigger>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>Create user</DialogTitle>
+          <DialogTitle>{editing ? `Edit ${user?.full_name}` : "Create user"}</DialogTitle>
           <DialogDescription>
-            Password is stored as a bcrypt hash. Access follows the four-layer
-            model: company → department → sub-department.
+            Passwords are stored as bcrypt hashes. Access follows the
+            four-layer model: company → department → sub-department.
           </DialogDescription>
         </DialogHeader>
 
         <div className="grid gap-4">
           <div className="grid gap-2 sm:grid-cols-2">
             <div className="grid gap-1.5">
-              <Label htmlFor="cu-name">Full name</Label>
-              <Input id="cu-name" value={fullName} onChange={(e) => setFullName(e.target.value)} placeholder="Jane Wanjiku" />
+              <Label htmlFor="uf-name">Full name</Label>
+              <Input id="uf-name" value={fullName} onChange={(e) => setFullName(e.target.value)} placeholder="Jane Wanjiku" />
             </div>
             <div className="grid gap-1.5">
-              <Label htmlFor="cu-email">Email</Label>
-              <Input id="cu-email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="janew@loki-ventures.com" />
+              <Label htmlFor="uf-email">Email</Label>
+              <Input id="uf-email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="janew@loki-ventures.com" />
             </div>
           </div>
 
           <div className="grid gap-2 sm:grid-cols-3">
             <div className="grid gap-1.5">
-              <Label htmlFor="cu-pass">Password</Label>
-              <Input id="cu-pass" type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
+              <Label htmlFor="uf-pass">
+                {editing ? "New password" : "Password"}
+              </Label>
+              <Input
+                id="uf-pass"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder={editing ? "Leave blank to keep" : undefined}
+              />
             </div>
             <div className="grid gap-1.5">
-              <Label htmlFor="cu-sysrole">System role</Label>
-              <NativeSelect id="cu-sysrole" value={systemRole} onChange={(e) => setSystemRole(e.target.value)}>
+              <Label htmlFor="uf-sysrole">System role</Label>
+              <NativeSelect id="uf-sysrole" value={systemRole} onChange={(e) => setSystemRole(e.target.value)}>
                 <option value="super_admin">Super Admin</option>
                 <option value="hod">HOD</option>
                 <option value="member">Member</option>
               </NativeSelect>
             </div>
             <div className="grid gap-1.5">
-              <Label htmlFor="cu-corole">Company role</Label>
-              <Input id="cu-corole" value={companyRole} onChange={(e) => setCompanyRole(e.target.value)} />
+              <Label htmlFor="uf-corole">Company role</Label>
+              <Input id="uf-corole" value={companyRole} onChange={(e) => setCompanyRole(e.target.value)} />
             </div>
           </div>
 
@@ -131,8 +160,8 @@ export function CreateUserDialog({ org }: { org: OrgBusiness[] }) {
           </div>
 
           <div className="flex items-center justify-between">
-            <Label htmlFor="cu-deptall">All departments</Label>
-            <Switch id="cu-deptall" checked={deptAll} onCheckedChange={setDeptAll} />
+            <Label htmlFor="uf-deptall">All departments</Label>
+            <Switch id="uf-deptall" checked={deptAll} onCheckedChange={setDeptAll} />
           </div>
 
           {!deptAll && accessibleBusinesses.length > 0 && (
@@ -158,8 +187,8 @@ export function CreateUserDialog({ org }: { org: OrgBusiness[] }) {
           )}
 
           <div className="flex items-center justify-between">
-            <Label htmlFor="cu-suball">All sub-departments</Label>
-            <Switch id="cu-suball" checked={subDeptAll} onCheckedChange={setSubDeptAll} />
+            <Label htmlFor="uf-suball">All sub-departments</Label>
+            <Switch id="uf-suball" checked={subDeptAll} onCheckedChange={setSubDeptAll} />
           </div>
 
           {!subDeptAll && accessibleBusinesses.length > 0 && (
@@ -197,7 +226,7 @@ export function CreateUserDialog({ org }: { org: OrgBusiness[] }) {
           )}
 
           <Button onClick={submit} disabled={pending}>
-            {pending ? "Creating…" : "Create user"}
+            {pending ? "Saving…" : editing ? "Save changes" : "Create user"}
           </Button>
         </div>
       </DialogContent>

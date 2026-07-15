@@ -377,12 +377,10 @@ body:has(.l10-theme) {
   font-family: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
 }
 
-/* Centered content width for /l10, mirroring the dashboard-horizontal
-   template's container (max 1367px, no side padding). The site-wide
-   .container above carries registry-specific overrides (px-6/lg:px-8,
-   xl:min-w-[1330px]!) that break even spacing inside the L10 app. */
+/* Fluid content width for /l10 — full width so wide screens are utilised.
+   (Was max-width: 1367px mirroring the boxed premium template; the site-wide
+   .container still carries registry-specific overrides we must avoid.) */
 .l10-container {
   width: 100%;
-  max-width: 1367px;
   margin-inline: auto;
 }
