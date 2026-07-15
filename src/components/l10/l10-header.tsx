@@ -46,17 +46,16 @@ export function L10Header() {
     <header className="l10-container">
       <div className="flex flex-wrap items-center justify-between p-2">
         <div className="flex items-center gap-2">
-          <Link href="/l10" className="flex items-center gap-2">
-            {/* Brand mark — swap public/images/l10/logo.svg to rebrand */}
+          <Link href="/l10" className="flex items-center gap-2.5">
             <Image
-              src="/images/l10/logo.svg"
-              alt="HOD L10"
-              width={32}
+              src="/images/l10/eos-logo.svg"
+              alt="EOS"
+              width={120}
               height={32}
-              className="size-8 rounded-lg"
+              className="h-8 w-auto"
               priority
             />
-            <span className="text-base font-semibold tracking-tight">
+            <span className="text-muted-foreground border-border border-s ps-2.5 text-base font-semibold tracking-tight">
               HOD&nbsp;L10
             </span>
           </Link>

@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
 
@@ -42,6 +43,13 @@ export default function L10DashboardPage() {
               </span>
             </div>
             <Badge variant="outline">Week of 13 Jul 2026</Badge>
+            <Image
+              src="/images/l10/we-run-on-eos-badge.png"
+              alt="We Run on EOS"
+              width={96}
+              height={64}
+              className="h-12 w-auto"
+            />
           </div>
         </CardContent>
       </Card>

@@ -11,7 +11,7 @@ export const metadata: Metadata = {
   description:
     "Loki Ventures Level 10 meeting platform: Scorecard, Rocks, To-Dos and Issues.",
   icons: [
-    { url: "/images/l10/logo.svg", type: "image/svg+xml", rel: "icon" },
+    { url: "/images/l10/eos-logo.svg", type: "image/svg+xml", rel: "icon" },
   ],
 };
 
