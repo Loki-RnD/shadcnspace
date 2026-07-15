@@ -23,7 +23,7 @@ export default function L10Layout({
           GeistSans.variable,
         )}
       >
-        <main className="bg-background outline-border relative m-2 flex w-full flex-1 flex-col overflow-clip rounded-xl outline">
+        <main className="bg-background outline-border relative m-2 flex w-full flex-1 flex-col overflow-clip rounded-xl px-3 outline sm:px-6">
           <L10Header />
           <L10Nav />
           <div className="flex flex-1 flex-col gap-4 p-4">
