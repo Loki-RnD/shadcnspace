@@ -10,6 +10,9 @@ export const metadata: Metadata = {
   title: "HOD L10 — Level 10 Meeting Platform",
   description:
     "Loki Ventures Level 10 meeting platform: Scorecard, Rocks, To-Dos and Issues.",
+  icons: [
+    { url: "/images/l10/logo.svg", type: "image/svg+xml", rel: "icon" },
+  ],
 };
 
 export default function L10Layout({

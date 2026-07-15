@@ -1,9 +1,10 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
-import { Bell, Moon, Search, Sun, Zap } from "lucide-react";
+import { Bell, Moon, Search, Sun } from "lucide-react";
 
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -46,9 +47,15 @@ export function L10Header() {
       <div className="flex flex-wrap items-center justify-between p-2">
         <div className="flex items-center gap-2">
           <Link href="/l10" className="flex items-center gap-2">
-            <span className="bg-primary text-primary-foreground flex size-8 items-center justify-center rounded-lg">
-              <Zap className="size-4" />
-            </span>
+            {/* Brand mark — swap public/images/l10/logo.svg to rebrand */}
+            <Image
+              src="/images/l10/logo.svg"
+              alt="HOD L10"
+              width={32}
+              height={32}
+              className="size-8 rounded-lg"
+              priority
+            />
             <span className="text-base font-semibold tracking-tight">
               HOD&nbsp;L10
             </span>
