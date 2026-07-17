@@ -14,6 +14,7 @@ import type { SessionUser } from "@/lib/l10/auth/token";
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
@@ -89,17 +90,21 @@ export function L10Header({ user }: { user: SessionUser }) {
               </Avatar>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-52">
-              <DropdownMenuLabel>
-                <div className="flex flex-col">
-                  <span>{user.name}</span>
-                  <span className="text-muted-foreground text-xs font-normal">
-                    {user.companyRole}
-                    {user.companies.length > 0
-                      ? ` · ${user.companies.join(", ")}`
-                      : ""}
-                  </span>
-                </div>
-              </DropdownMenuLabel>
+              {/* GroupLabel must live inside a Menu.Group or the popup
+                  throws while rendering (Base UI error #31) */}
+              <DropdownMenuGroup>
+                <DropdownMenuLabel>
+                  <div className="flex flex-col">
+                    <span>{user.name}</span>
+                    <span className="text-muted-foreground text-xs font-normal">
+                      {user.companyRole}
+                      {user.companies.length > 0
+                        ? ` · ${user.companies.join(", ")}`
+                        : ""}
+                    </span>
+                  </div>
+                </DropdownMenuLabel>
+              </DropdownMenuGroup>
               <DropdownMenuSeparator />
               <DropdownMenuItem>Profile</DropdownMenuItem>
               <DropdownMenuItem>Team settings</DropdownMenuItem>
