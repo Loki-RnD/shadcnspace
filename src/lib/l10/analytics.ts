@@ -82,21 +82,45 @@ export interface SeriesPoint {
   visitors: number;
 }
 
-/** Time series bucketed to fit the window: hours (≤48h), days (≤93d), months. */
+/** Time series bucketed to fit the window: hours (≤48h), days (≤93d), months.
+ *  Each bucket size is its own statement — date_trunc's unit cannot be a bind
+ *  parameter without breaking GROUP BY expression matching. */
 export async function getSeries(hours: number | null): Promise<SeriesPoint[]> {
   const h = hours ?? LIFETIME_HOURS;
   const unit = h <= 48 ? "hour" : h <= 2232 ? "day" : "month";
-  const fmt = unit === "hour" ? "HH24:00" : unit === "day" ? "Mon DD" : "Mon YYYY";
-  const rows = await sql`
-    select
-      to_char(date_trunc(${unit}, created_at), ${fmt})        as bucket,
-      count(*) filter (where event_type = 'pageview')::int    as pageviews,
-      count(distinct user_id)::int                            as visitors
-    from l10.analytics_events
-    where created_at > now() - make_interval(hours => ${h})
-    group by date_trunc(${unit}, created_at)
-    order by date_trunc(${unit}, created_at)
-  `;
+  const rows =
+    unit === "hour"
+      ? await sql`
+          select
+            to_char(date_trunc('hour', created_at), 'HH24:00')      as bucket,
+            count(*) filter (where event_type = 'pageview')::int    as pageviews,
+            count(distinct user_id)::int                            as visitors
+          from l10.analytics_events
+          where created_at > now() - make_interval(hours => ${h})
+          group by date_trunc('hour', created_at)
+          order by date_trunc('hour', created_at)
+        `
+      : unit === "day"
+        ? await sql`
+            select
+              to_char(date_trunc('day', created_at), 'Mon DD')        as bucket,
+              count(*) filter (where event_type = 'pageview')::int    as pageviews,
+              count(distinct user_id)::int                            as visitors
+            from l10.analytics_events
+            where created_at > now() - make_interval(hours => ${h})
+            group by date_trunc('day', created_at)
+            order by date_trunc('day', created_at)
+          `
+        : await sql`
+            select
+              to_char(date_trunc('month', created_at), 'Mon YYYY')    as bucket,
+              count(*) filter (where event_type = 'pageview')::int    as pageviews,
+              count(distinct user_id)::int                            as visitors
+            from l10.analytics_events
+            where created_at > now() - make_interval(hours => ${h})
+            group by date_trunc('month', created_at)
+            order by date_trunc('month', created_at)
+          `;
   return rows as SeriesPoint[];
 }
 
