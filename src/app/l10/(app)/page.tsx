@@ -35,7 +35,7 @@ export default function L10DashboardPage() {
               Weekly health across the Level 10 disciplines
             </p>
           </div>
-          <div className="flex items-center gap-4">
+          <div className="flex flex-wrap items-center gap-3 sm:gap-4">
             <div className="flex items-center gap-2">
               <MemberStack members={l10Members} max={5} />
               <span className="text-muted-foreground text-xs">

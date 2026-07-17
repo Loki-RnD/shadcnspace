@@ -85,8 +85,8 @@ export default async function ScorecardPage({
       />
 
       {/* Cadence tabs — Trends | Weekly | Monthly | Quarterly | Annual */}
-      <div className="mb-4 flex items-center gap-6 border-b">
-        <span className="text-muted-foreground/50 cursor-not-allowed pb-2 text-sm">
+      <div className="mb-4 flex items-center gap-4 overflow-x-auto border-b sm:gap-6">
+        <span className="text-muted-foreground/50 shrink-0 cursor-not-allowed pb-2 text-sm">
           Trends
         </span>
         {CADENCE_TABS.map((t) => (
@@ -94,7 +94,7 @@ export default async function ScorecardPage({
             key={t.key}
             href={`/l10/scorecard?team=${team.id}&cadence=${t.key}`}
             className={cn(
-              "-mb-px border-b-2 pb-2 text-sm transition-colors",
+              "-mb-px shrink-0 border-b-2 pb-2 text-sm whitespace-nowrap transition-colors",
               t.key === cadence
                 ? "border-[#f05100] font-semibold text-[#f05100]"
                 : "text-muted-foreground hover:text-foreground border-transparent",

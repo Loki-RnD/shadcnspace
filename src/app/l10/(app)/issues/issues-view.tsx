@@ -217,7 +217,7 @@ export function IssuesView({
             ))}
           </DropdownMenuContent>
         </DropdownMenu>
-        <div className="relative min-w-56">
+        <div className="relative min-w-0 flex-1 sm:min-w-56 sm:flex-none">
           <Search className="text-muted-foreground absolute top-1/2 left-2.5 size-3.5 -translate-y-1/2" />
           <Input
             value={query}
@@ -257,17 +257,19 @@ export function IssuesView({
           <table className="w-full border-t text-sm">
             <thead>
               <tr className="text-muted-foreground border-b text-xs [&>th]:px-3 [&>th]:py-2 [&>th]:font-medium">
-                <th className="w-10 text-left">#</th>
+                <th className="hidden w-10 text-left sm:table-cell">#</th>
                 <th className="w-full text-left">Title</th>
                 <th className="text-left">Owner</th>
-                <th className="text-left whitespace-nowrap">Created</th>
+                <th className="hidden text-left whitespace-nowrap sm:table-cell">
+                  Created
+                </th>
                 <th className="w-8" />
               </tr>
             </thead>
             <tbody>
               {filtered.map((i, idx) => (
                 <tr key={i.id} className="group border-b last:border-0">
-                  <td className="text-muted-foreground px-3 py-2 text-xs tabular-nums">
+                  <td className="text-muted-foreground hidden px-3 py-2 text-xs tabular-nums sm:table-cell">
                     {idx + 1}
                   </td>
                   <td className="px-3 py-2">
@@ -294,7 +296,7 @@ export function IssuesView({
                   <td className="px-3 py-2">
                     <OwnerAvatar name={i.owner_name} />
                   </td>
-                  <td className="text-muted-foreground px-3 py-2 text-xs whitespace-nowrap">
+                  <td className="text-muted-foreground hidden px-3 py-2 text-xs whitespace-nowrap sm:table-cell">
                     {df.format(new Date(i.created_at))}
                   </td>
                   <td className="px-1">
@@ -303,7 +305,7 @@ export function IssuesView({
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="size-7 text-emerald-600 opacity-0 group-hover:opacity-100"
+                          className="size-7 text-emerald-600 sm:opacity-0 sm:group-hover:opacity-100"
                           title="Solve"
                           onClick={() =>
                             startTransition(async () => {
@@ -320,7 +322,7 @@ export function IssuesView({
                         <DropdownMenuTrigger
                           className={cn(
                             buttonVariants({ variant: "ghost", size: "icon" }),
-                            "size-7 opacity-0 group-hover:opacity-100",
+                            "size-7 sm:opacity-0 sm:group-hover:opacity-100",
                           )}
                         >
                           <Ellipsis className="size-3.5" />

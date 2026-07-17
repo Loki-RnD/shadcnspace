@@ -224,7 +224,7 @@ export function TodosView({
             </DropdownMenuContent>
           </DropdownMenu>
         ) : null}
-        <div className="relative min-w-56">
+        <div className="relative min-w-0 flex-1 sm:min-w-56 sm:flex-none">
           <Search className="text-muted-foreground absolute top-1/2 left-2.5 size-3.5 -translate-y-1/2" />
           <Input
             value={query}
@@ -262,7 +262,9 @@ export function TodosView({
               <tr className="text-muted-foreground border-b text-xs [&>th]:px-3 [&>th]:py-2 [&>th]:font-medium">
                 <th className="w-10" />
                 <th className="w-full text-left">Title</th>
-                {!isPrivate ? <th className="text-left">Owner</th> : null}
+                {!isPrivate ? (
+                  <th className="hidden text-left sm:table-cell">Owner</th>
+                ) : null}
                 <th className="text-left whitespace-nowrap">Due Date</th>
                 <th className="w-8" />
               </tr>
@@ -310,7 +312,7 @@ export function TodosView({
                       ) : null}
                     </td>
                     {!isPrivate ? (
-                      <td className="px-3 py-2">
+                      <td className="hidden px-3 py-2 sm:table-cell">
                         <OwnerAvatar name={t.owner_name} />
                       </td>
                     ) : null}
@@ -329,7 +331,7 @@ export function TodosView({
                         <DropdownMenuTrigger
                           className={cn(
                             buttonVariants({ variant: "ghost", size: "icon" }),
-                            "size-7 opacity-0 group-hover:opacity-100",
+                            "size-7 sm:opacity-0 sm:group-hover:opacity-100",
                           )}
                         >
                           <Ellipsis className="size-3.5" />

@@ -31,6 +31,7 @@ import {
 } from "recharts";
 
 import { cn } from "@/lib/utils";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -65,7 +66,15 @@ const nf = new Intl.NumberFormat("en-KE", { maximumFractionDigits: 2 });
 type Cell = { value: number; rag: "on" | "off" | null };
 
 // Frozen (sticky) column geometry — px widths and cumulative left offsets.
-const COLS = {
+// On phones only trend + title stay frozen; anything wider than ~200px of
+// sticky columns leaves no room to reach the period cells.
+type ColGeom = { w: number; left: number };
+type ColsMap = Record<
+  "check" | "trend" | "title" | "goal" | "avg" | "total",
+  ColGeom | null
+>;
+
+const COLS_DESKTOP: ColsMap = {
   check: { w: 36, left: 0 },
   trend: { w: 48, left: 36 },
   title: { w: 288, left: 84 },
@@ -73,7 +82,19 @@ const COLS = {
   avg: { w: 80, left: 468 },
   total: { w: 80, left: 548 },
 };
-const FIXED_WIDTH = 628;
+
+const COLS_MOBILE: ColsMap = {
+  check: null,
+  trend: { w: 40, left: 0 },
+  title: { w: 148, left: 40 },
+  goal: null,
+  avg: null,
+  total: null,
+};
+
+function fixedWidth(cols: ColsMap) {
+  return Object.values(cols).reduce((sum, c) => sum + (c?.w ?? 0), 0);
+}
 
 const AVATAR_TINTS = [
   "bg-[#f05100]/15 text-[#f05100]",
@@ -100,13 +121,13 @@ function ragClass(rag: "on" | "off" | null | undefined) {
   return "";
 }
 
-function stickyCell(col: keyof typeof COLS, extra?: string) {
+function stickyCell(geom: ColGeom, extra?: string) {
   return {
     className: cn(
       "sticky z-10 bg-card group-hover:bg-muted/60 transition-colors",
       extra,
     ),
-    style: { left: COLS[col].left, minWidth: COLS[col].w, width: COLS[col].w },
+    style: { left: geom.left, minWidth: geom.w, width: geom.w },
   };
 }
 
@@ -282,6 +303,9 @@ function GroupTable({
 }) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const currentStart = periods[periods.length - 1]?.start;
+  const isMobile = useIsMobile();
+  const cols = isMobile ? COLS_MOBILE : COLS_DESKTOP;
+  const fixedCount = Object.values(cols).filter(Boolean).length;
 
   // land on the newest periods (right end) — Ninety behaviour
   useEffect(() => {
@@ -323,9 +347,9 @@ function GroupTable({
         <thead>
           <tr className="text-muted-foreground text-xs">
             <th
-              colSpan={6}
+              colSpan={fixedCount}
               className="bg-card sticky top-0 left-0 z-40 p-0"
-              style={{ minWidth: FIXED_WIDTH }}
+              style={{ minWidth: fixedWidth(cols) }}
             />
             {yearSpans.map((y) => (
               <th
@@ -339,51 +363,85 @@ function GroupTable({
             <th className="bg-card sticky top-0 z-20 border-b p-0" />
           </tr>
           <tr className="text-muted-foreground text-xs [&>th]:px-2 [&>th]:py-2 [&>th]:font-medium">
-            <th
-              className="bg-card sticky z-30 border-b"
-              style={{ top: 25, left: COLS.check.left, minWidth: COLS.check.w }}
-            >
-              <Checkbox
-                checked={rows.length > 0 && rows.every((r) => checked[r.id])}
-                onCheckedChange={(v) =>
-                  setChecked(
-                    Object.fromEntries(rows.map((r) => [r.id, v === true])),
-                  )
-                }
-              />
-            </th>
-            <th
-              className="bg-card sticky z-30 border-b text-center"
-              style={{ top: 25, left: COLS.trend.left, minWidth: COLS.trend.w }}
-            >
-              View
-              <br />
-              Trend
-            </th>
-            <th
-              className="bg-card sticky z-30 border-b text-left"
-              style={{ top: 25, left: COLS.title.left, minWidth: COLS.title.w }}
-            >
-              Title
-            </th>
-            <th
-              className="bg-card sticky z-30 border-b text-right"
-              style={{ top: 25, left: COLS.goal.left, minWidth: COLS.goal.w }}
-            >
-              Goal
-            </th>
-            <th
-              className="bg-card sticky z-30 border-b text-right"
-              style={{ top: 25, left: COLS.avg.left, minWidth: COLS.avg.w }}
-            >
-              Average
-            </th>
-            <th
-              className="bg-card sticky z-30 border-b text-right"
-              style={{ top: 25, left: COLS.total.left, minWidth: COLS.total.w }}
-            >
-              Total
-            </th>
+            {cols.check ? (
+              <th
+                className="bg-card sticky z-30 border-b"
+                style={{
+                  top: 25,
+                  left: cols.check.left,
+                  minWidth: cols.check.w,
+                }}
+              >
+                <Checkbox
+                  checked={rows.length > 0 && rows.every((r) => checked[r.id])}
+                  onCheckedChange={(v) =>
+                    setChecked(
+                      Object.fromEntries(rows.map((r) => [r.id, v === true])),
+                    )
+                  }
+                />
+              </th>
+            ) : null}
+            {cols.trend ? (
+              <th
+                className="bg-card sticky z-30 border-b text-center"
+                style={{
+                  top: 25,
+                  left: cols.trend.left,
+                  minWidth: cols.trend.w,
+                }}
+              >
+                {isMobile ? (
+                  <LineChartIcon className="mx-auto size-3.5" />
+                ) : (
+                  <>
+                    View
+                    <br />
+                    Trend
+                  </>
+                )}
+              </th>
+            ) : null}
+            {cols.title ? (
+              <th
+                className="bg-card sticky z-30 border-b text-left"
+                style={{
+                  top: 25,
+                  left: cols.title.left,
+                  minWidth: cols.title.w,
+                }}
+              >
+                Title
+              </th>
+            ) : null}
+            {cols.goal ? (
+              <th
+                className="bg-card sticky z-30 border-b text-right"
+                style={{ top: 25, left: cols.goal.left, minWidth: cols.goal.w }}
+              >
+                Goal
+              </th>
+            ) : null}
+            {cols.avg ? (
+              <th
+                className="bg-card sticky z-30 border-b text-right"
+                style={{ top: 25, left: cols.avg.left, minWidth: cols.avg.w }}
+              >
+                Average
+              </th>
+            ) : null}
+            {cols.total ? (
+              <th
+                className="bg-card sticky z-30 border-b text-right"
+                style={{
+                  top: 25,
+                  left: cols.total.left,
+                  minWidth: cols.total.w,
+                }}
+              >
+                Total
+              </th>
+            ) : null}
             {periods.map((p) => {
               const [a, b] = p.label.split(" - ");
               return (
@@ -422,18 +480,22 @@ function GroupTable({
               : null;
             return (
               <tr key={m.id} className="group border-b last:border-0">
-                <td {...stickyCell("check", "px-2")}>
-                  <Checkbox
-                    checked={checked[m.id] ?? false}
-                    onCheckedChange={(v) =>
-                      setChecked({ [m.id]: v === true })
-                    }
-                  />
-                </td>
-                <td {...stickyCell("trend", "px-2 text-center")}>
-                  <TrendPopover metric={m} periods={periods} cells={cells} />
-                </td>
-                <td {...stickyCell("title", "px-2 py-1.5")}>
+                {cols.check ? (
+                  <td {...stickyCell(cols.check, "px-2")}>
+                    <Checkbox
+                      checked={checked[m.id] ?? false}
+                      onCheckedChange={(v) =>
+                        setChecked({ [m.id]: v === true })
+                      }
+                    />
+                  </td>
+                ) : null}
+                {cols.trend ? (
+                  <td {...stickyCell(cols.trend, "px-2 text-center")}>
+                    <TrendPopover metric={m} periods={periods} cells={cells} />
+                  </td>
+                ) : null}
+                <td {...stickyCell(cols.title!, "px-2 py-1.5")}>
                   <div className="flex items-center gap-2">
                     {m.owner_name ? (
                       <Tooltip>
@@ -471,25 +533,36 @@ function GroupTable({
                     </button>
                   </div>
                 </td>
-                <td
-                  {...stickyCell(
-                    "goal",
-                    "px-2 text-right text-xs whitespace-nowrap",
-                  )}
-                >
-                  {m.goal_text ?? "—"}
-                </td>
-                <td {...stickyCell("avg", "px-2 text-right text-xs tabular-nums")}>
-                  {avg === null ? "—" : nf.format(avg)}
-                </td>
-                <td
-                  {...stickyCell(
-                    "total",
-                    "px-2 text-right text-xs tabular-nums",
-                  )}
-                >
-                  {total === null ? "—" : nf.format(total)}
-                </td>
+                {cols.goal ? (
+                  <td
+                    {...stickyCell(
+                      cols.goal,
+                      "px-2 text-right text-xs whitespace-nowrap",
+                    )}
+                  >
+                    {m.goal_text ?? "—"}
+                  </td>
+                ) : null}
+                {cols.avg ? (
+                  <td
+                    {...stickyCell(
+                      cols.avg,
+                      "px-2 text-right text-xs tabular-nums",
+                    )}
+                  >
+                    {avg === null ? "—" : nf.format(avg)}
+                  </td>
+                ) : null}
+                {cols.total ? (
+                  <td
+                    {...stickyCell(
+                      cols.total,
+                      "px-2 text-right text-xs tabular-nums",
+                    )}
+                  >
+                    {total === null ? "—" : nf.format(total)}
+                  </td>
+                ) : null}
                 {periods.map((p) => (
                   <td
                     key={p.start}
@@ -513,7 +586,7 @@ function GroupTable({
                     <DropdownMenuTrigger
                           className={cn(
                             buttonVariants({ variant: "ghost", size: "icon" }),
-                            "size-7 opacity-0 group-hover:opacity-100",
+                            "size-7 sm:opacity-0 sm:group-hover:opacity-100",
                           )}
                         >
                       <Ellipsis className="size-3.5" />
@@ -541,7 +614,7 @@ function GroupTable({
           {rows.length === 0 ? (
             <tr>
               <td
-                colSpan={7 + periods.length}
+                colSpan={fixedCount + 1 + periods.length}
                 className="text-muted-foreground h-24 text-center text-xs"
               >
                 No data to show
@@ -606,7 +679,7 @@ export function ScorecardView({
     <div className="flex flex-col gap-4">
       {/* Toolbar */}
       <div className="flex flex-wrap items-center gap-2">
-        <div className="flex items-center rounded-lg border">
+        <div className="hidden items-center rounded-lg border sm:flex">
           <Button variant="ghost" size="icon" className="size-8" disabled>
             <Undo2 className="size-3.5" />
           </Button>
@@ -628,7 +701,7 @@ export function ScorecardView({
               <Button
                 variant="outline"
                 size="sm"
-                className="text-[#f05100] opacity-60"
+                className="hidden text-[#f05100] opacity-60 sm:inline-flex"
               />
             }
           >
@@ -636,7 +709,12 @@ export function ScorecardView({
           </TooltipTrigger>
           <TooltipContent>Coming soon</TooltipContent>
         </Tooltip>
-        <Button variant="outline" size="icon" className="size-8" disabled>
+        <Button
+          variant="outline"
+          size="icon"
+          className="hidden size-8 sm:inline-flex"
+          disabled
+        >
           <Ellipsis className="size-3.5" />
         </Button>
         <Tooltip>
@@ -645,7 +723,7 @@ export function ScorecardView({
               <Button
                 variant="outline"
                 size="sm"
-                className="gap-1 text-[#f05100] opacity-60"
+                className="hidden gap-1 text-[#f05100] opacity-60 sm:inline-flex"
               />
             }
           >
@@ -653,7 +731,7 @@ export function ScorecardView({
           </TooltipTrigger>
           <TooltipContent>AI optimize — coming soon</TooltipContent>
         </Tooltip>
-        <div className="relative ml-1 min-w-56">
+        <div className="relative min-w-0 flex-1 sm:ml-1 sm:min-w-56 sm:flex-none">
           <Search className="text-muted-foreground absolute top-1/2 left-2.5 size-3.5 -translate-y-1/2" />
           <Input
             value={query}
@@ -669,7 +747,7 @@ export function ScorecardView({
         const isCollapsed = collapsed[groupName] ?? false;
         return (
           <div key={groupName} className="bg-card rounded-xl border">
-            <div className="flex items-center justify-between px-4 py-3">
+            <div className="flex flex-wrap items-center justify-between gap-2 px-4 py-3">
               <div className="flex items-baseline gap-2">
                 <p className="text-card-foreground text-base font-semibold">
                   {groupName}

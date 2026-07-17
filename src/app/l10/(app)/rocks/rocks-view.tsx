@@ -140,7 +140,7 @@ function MilestoneList({
           <Button
             variant="ghost"
             size="icon"
-            className="size-5 opacity-0 group-hover/ms:opacity-100"
+            className="size-5 sm:opacity-0 sm:group-hover/ms:opacity-100"
             onClick={() =>
               startTransition(async () => {
                 const res = await deleteMilestone(teamId, rock.id, ms.id);
@@ -195,7 +195,9 @@ function RockTable({
           <th className="w-8" />
           <th className="text-left">Status</th>
           <th className="w-full text-left">Title</th>
-          <th className="text-left whitespace-nowrap">Milestones</th>
+          <th className="hidden text-left whitespace-nowrap sm:table-cell">
+            Milestones
+          </th>
           <th className="text-left whitespace-nowrap">Due Date</th>
           <th className="w-8" />
         </tr>
@@ -236,7 +238,7 @@ function RockTable({
                     {r.title}
                   </button>
                 </td>
-                <td className="px-3 py-2 whitespace-nowrap">
+                <td className="hidden px-3 py-2 whitespace-nowrap sm:table-cell">
                   {r.milestones.length > 0 ? (
                     <div className="flex items-center gap-2">
                       <Progress
@@ -259,7 +261,7 @@ function RockTable({
                     <DropdownMenuTrigger
                           className={cn(
                             buttonVariants({ variant: "ghost", size: "icon" }),
-                            "size-7 opacity-0 group-hover:opacity-100",
+                            "size-7 sm:opacity-0 sm:group-hover:opacity-100",
                           )}
                         >
                       <Ellipsis className="size-3.5" />
@@ -364,7 +366,7 @@ export function RocksView({
             ))}
           </DropdownMenuContent>
         </DropdownMenu>
-        <div className="relative min-w-56">
+        <div className="relative min-w-0 flex-1 sm:min-w-56 sm:flex-none">
           <Search className="text-muted-foreground absolute top-1/2 left-2.5 size-3.5 -translate-y-1/2" />
           <Input
             value={query}

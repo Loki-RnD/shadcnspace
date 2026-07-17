@@ -17,12 +17,12 @@ export default async function L10AppLayout({
   const promptRating = await shouldPromptRating(user.id).catch(() => false);
 
   return (
-    <main className="bg-background outline-border relative m-2 flex w-full flex-1 flex-col overflow-clip rounded-xl px-3 outline sm:px-6">
+    <main className="bg-background outline-border relative m-0 flex w-full flex-1 flex-col overflow-clip rounded-none px-3 outline sm:m-2 sm:rounded-xl sm:px-6">
       <AnalyticsTracker />
       <RatingPrompt shouldPrompt={promptRating} />
       <L10Header user={user} />
       <L10Nav isSuperAdmin={user.systemRole === "super_admin"} />
-      <div className="flex flex-1 flex-col gap-4 p-4">
+      <div className="flex flex-1 flex-col gap-4 px-0 py-4 sm:p-4">
         <div className="l10-container xl:mt-3">
           <div className="min-h-[calc(100vh-140px)]">{children}</div>
         </div>
