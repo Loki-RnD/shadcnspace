@@ -15,7 +15,7 @@ import {
 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -318,13 +318,10 @@ export function IssuesView({
                       ) : null}
                       <DropdownMenu>
                         <DropdownMenuTrigger
-                          render={
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="size-7 opacity-0 group-hover:opacity-100"
-                            />
-                          }
+                          className={cn(
+                            buttonVariants({ variant: "ghost", size: "icon" }),
+                            "size-7 opacity-0 group-hover:opacity-100",
+                          )}
                         >
                           <Ellipsis className="size-3.5" />
                         </DropdownMenuTrigger>

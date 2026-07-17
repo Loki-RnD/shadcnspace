@@ -5,7 +5,7 @@ import Link from "next/link";
 import { Bell, Search } from "lucide-react";
 
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { memberVisuals } from "@/components/l10/members";
 import { ThemeToggle } from "@/components/l10/theme-toggle";
@@ -73,10 +73,14 @@ export function L10Header({ user }: { user: SessionUser }) {
           </Button>
 
           <DropdownMenu>
+            {/* Plain trigger: nesting the Base UI Button primitive via
+                render breaks the menu's open handlers */}
             <DropdownMenuTrigger
-              render={
-                <Button variant="ghost" size="icon" className="rounded-full" />
-              }
+              aria-label="Account menu"
+              className={cn(
+                buttonVariants({ variant: "ghost", size: "icon" }),
+                "rounded-full",
+              )}
             >
               <Avatar className="size-7">
                 <AvatarFallback className={cn("text-xs font-medium", color)}>
