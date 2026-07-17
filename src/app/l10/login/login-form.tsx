@@ -1,78 +1,105 @@
 "use client";
 
-import { useActionState } from "react";
-import { LogIn } from "lucide-react";
+import { useActionState, useState } from "react";
+import Link from "next/link";
+import { Eye, EyeOff } from "lucide-react";
 
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
+import { cn } from "@/lib/utils";
 import { login, type LoginState } from "./actions";
 
 const initialState: LoginState = { error: null };
 
+const fieldClass =
+  "h-11 rounded-xl bg-white focus-visible:border-[#f05100]/70 focus-visible:ring-[#f05100]/25 dark:border-white/10 dark:bg-white/[0.04] dark:text-white dark:placeholder:text-zinc-500";
+
 export function LoginForm({ from }: { from?: string }) {
   const [state, formAction, pending] = useActionState(login, initialState);
+  const [showPassword, setShowPassword] = useState(false);
+  const [remember, setRemember] = useState(true);
 
   return (
-    <Card className="w-full max-w-md px-6 py-10 sm:px-10">
-      <CardHeader className="gap-4 p-0 text-center">
-        <Badge variant="outline" className="mx-auto gap-1.5 rounded-full px-3 py-1">
-          <LogIn className="size-3.5" />
-          Welcome
-        </Badge>
-        <div className="flex flex-col gap-2">
-          <h1 className="text-card-foreground text-2xl font-semibold tracking-tight">
-            Sign in to HOD L10
-          </h1>
-          <p className="text-muted-foreground text-sm font-normal text-balance">
-            Sign in to access your team&apos;s Scorecard, Rocks, To-Dos and
-            Issues.
-          </p>
-        </div>
-      </CardHeader>
-      <CardContent className="p-0">
-        <form action={formAction} className="flex flex-col gap-4">
-          {from ? <input type="hidden" name="from" value={from} /> : null}
+    <form action={formAction} className="flex w-full flex-col gap-5">
+      {from ? <input type="hidden" name="from" value={from} /> : null}
+      <input type="hidden" name="remember" value={remember ? "1" : ""} />
+
+      <div className="flex flex-col gap-2">
+        <Label htmlFor="email">Email address</Label>
+        <Input
+          id="email"
+          name="email"
+          type="email"
+          placeholder="Enter your email"
+          autoComplete="email"
+          required
+          className={fieldClass}
+        />
+      </div>
+
+      <div className="flex flex-col gap-2">
+        <Label htmlFor="password">Password</Label>
+        <div className="relative">
           <Input
-            name="email"
-            type="email"
-            placeholder="Email"
-            autoComplete="email"
-            required
-            aria-label="Email"
-            className="h-11 rounded-lg"
-          />
-          <Input
+            id="password"
             name="password"
-            type="password"
-            placeholder="Password"
+            type={showPassword ? "text" : "password"}
+            placeholder="Enter your password"
             autoComplete="current-password"
             required
-            aria-label="Password"
-            className="h-11 rounded-lg"
+            className={cn(fieldClass, "pr-11")}
           />
-
-          {state.error ? (
-            <p role="alert" className="text-destructive text-sm">
-              {state.error}
-            </p>
-          ) : null}
-
-          <Button
-            type="submit"
-            size="lg"
-            disabled={pending}
-            className="h-11 w-full rounded-lg"
+          <button
+            type="button"
+            onClick={() => setShowPassword((v) => !v)}
+            aria-label={showPassword ? "Hide password" : "Show password"}
+            className="text-muted-foreground hover:text-foreground absolute top-1/2 right-3 -translate-y-1/2 transition-colors"
           >
-            {pending ? "Signing in…" : "Sign in"}
-          </Button>
+            {showPassword ? (
+              <EyeOff className="size-4" />
+            ) : (
+              <Eye className="size-4" />
+            )}
+          </button>
+        </div>
+      </div>
 
-          <p className="text-muted-foreground text-center text-xs">
-            Accounts are provisioned by your team&apos;s super admin.
-          </p>
-        </form>
-      </CardContent>
-    </Card>
+      <div className="flex items-center justify-between">
+        <Label className="gap-2.5">
+          <Switch
+            checked={remember}
+            onCheckedChange={setRemember}
+            className="data-checked:bg-[#f05100]"
+          />
+          Remember me
+        </Label>
+        <Link
+          href="/l10/forgot-password"
+          className="text-sm font-medium text-[#f05100] transition-colors hover:text-[#fb8c00] dark:text-[#fb8c00] dark:hover:text-[#fbbf24]"
+        >
+          Forgot password?
+        </Link>
+      </div>
+
+      {state.error ? (
+        <p role="alert" className="text-destructive text-sm">
+          {state.error}
+        </p>
+      ) : null}
+
+      <Button
+        type="submit"
+        disabled={pending}
+        className="h-11 w-full rounded-full bg-gradient-to-r from-[#f05100] via-[#fb8c00] to-[#fbbf24] text-[15px] font-semibold text-white shadow-[0_8px_32px_rgba(240,81,0,0.25)] transition-[filter] hover:brightness-110 dark:shadow-[0_8px_32px_rgba(240,81,0,0.35)]"
+      >
+        {pending ? "Signing in…" : "Sign in"}
+      </Button>
+
+      <p className="text-muted-foreground text-center text-xs">
+        Accounts are provisioned by your team&apos;s super admin.
+      </p>
+    </form>
   );
 }

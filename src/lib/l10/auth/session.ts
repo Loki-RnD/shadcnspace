@@ -21,14 +21,18 @@ export const getSessionUser = cache(async (): Promise<SessionUser | null> => {
   return verifySessionToken(token);
 });
 
-export async function createSession(user: SessionUser) {
+export async function createSession(
+  user: SessionUser,
+  { remember = true }: { remember?: boolean } = {},
+) {
   const store = await cookies();
   store.set(SESSION_COOKIE, await signSessionToken(user), {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
     path: "/",
-    maxAge: SESSION_MAX_AGE_SECONDS,
+    // Without maxAge the cookie expires when the browser closes
+    ...(remember ? { maxAge: SESSION_MAX_AGE_SECONDS } : {}),
   });
 }
 

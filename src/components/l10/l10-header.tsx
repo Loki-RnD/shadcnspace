@@ -2,14 +2,13 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useTheme } from "next-themes";
-import { useEffect, useState } from "react";
-import { Bell, Moon, Search, Sun } from "lucide-react";
+import { Bell, Search } from "lucide-react";
 
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { memberVisuals } from "@/components/l10/members";
+import { ThemeToggle } from "@/components/l10/theme-toggle";
 import { logout } from "@/app/l10/login/actions";
 import type { SessionUser } from "@/lib/l10/auth/token";
 import {
@@ -21,27 +20,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
-
-function ThemeToggle() {
-  const { resolvedTheme, setTheme } = useTheme();
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => setMounted(true), []);
-
-  return (
-    <Button
-      variant="ghost"
-      size="icon"
-      aria-label="Toggle theme"
-      onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
-    >
-      {mounted && resolvedTheme === "dark" ? (
-        <Sun className="size-5" />
-      ) : (
-        <Moon className="size-5" />
-      )}
-    </Button>
-  );
-}
 
 export function L10Header({ user }: { user: SessionUser }) {
   const { initials, color } = memberVisuals(user.email, user.name);
@@ -60,7 +38,7 @@ export function L10Header({ user }: { user: SessionUser }) {
               priority
             />
             <Image
-              src="/images/l10/eos-logo-dark.png"
+              src="/images/l10/eos-logo-dark-plain.png"
               alt="EOS"
               width={84}
               height={32}

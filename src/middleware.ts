@@ -14,8 +14,9 @@ export async function middleware(request: NextRequest) {
   const token = request.cookies.get(SESSION_COOKIE)?.value;
   const user = token ? await verifySessionToken(token) : null;
 
-  const isLoginPage = pathname === "/l10/login";
-  if (isLoginPage) {
+  const isPublicAuthPage =
+    pathname === "/l10/login" || pathname === "/l10/forgot-password";
+  if (isPublicAuthPage) {
     return user
       ? NextResponse.redirect(new URL("/l10", request.url))
       : NextResponse.next();

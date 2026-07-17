@@ -20,6 +20,7 @@ export async function login(
   const email = String(formData.get("email") ?? "").trim();
   const password = String(formData.get("password") ?? "");
   const from = String(formData.get("from") ?? "");
+  const remember = formData.get("remember") === "1";
 
   if (!email || !password) {
     return { error: "Email and password are required." };
@@ -52,7 +53,7 @@ export async function login(
     systemRole: user.system_role,
     companyRole: user.company_role,
     companies: user.companies,
-  } satisfies SessionUser);
+  } satisfies SessionUser, { remember });
 
   // Only follow same-app redirect targets
   redirect(from.startsWith("/l10") ? from : "/l10");

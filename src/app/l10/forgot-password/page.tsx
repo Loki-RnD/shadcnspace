@@ -1,24 +1,14 @@
 import type { Metadata } from "next";
 import Image from "next/image";
-import { redirect } from "next/navigation";
+import Link from "next/link";
 
-import { getSessionUser } from "@/lib/l10/auth/session";
 import { ThemeToggle } from "@/components/l10/theme-toggle";
-import { LoginForm } from "./login-form";
 
 export const metadata: Metadata = {
-  title: "Sign in — HOD L10",
+  title: "Forgot password — HOD L10",
 };
 
-export default async function LoginPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ from?: string }>;
-}) {
-  if (await getSessionUser()) redirect("/l10");
-
-  const { from } = await searchParams;
-
+export default function ForgotPasswordPage() {
   return (
     <div className="relative flex min-h-svh flex-col items-center justify-center overflow-hidden bg-[#f7f4f0] px-4 py-12 dark:bg-[#0b0a09]">
       <div aria-hidden className="pointer-events-none absolute inset-0">
@@ -28,35 +18,39 @@ export default async function LoginPage({
 
       <ThemeToggle className="absolute top-4 right-4 z-20" />
 
-      <main className="relative z-10 flex w-full max-w-sm flex-col items-center">
+      <main className="relative z-10 flex w-full max-w-sm flex-col items-center text-center">
         <Image
           src="/images/l10/eos-logo-plain.png"
           alt="EOS"
-          width={168}
-          height={64}
-          className="h-16 w-auto dark:hidden"
+          width={126}
+          height={48}
+          className="h-12 w-auto dark:hidden"
           priority
         />
         <Image
           src="/images/l10/eos-logo-dark-plain.png"
           alt="EOS"
-          width={168}
-          height={64}
-          className="hidden h-16 w-auto dark:block"
+          width={126}
+          height={48}
+          className="hidden h-12 w-auto dark:block"
           priority
         />
 
-        <h1 className="text-foreground mt-8 text-center text-3xl font-semibold tracking-tight">
-          Welcome back
+        <h1 className="text-foreground mt-8 text-2xl font-semibold tracking-tight">
+          Reset your password
         </h1>
-        <p className="text-muted-foreground mt-2 text-center text-sm text-balance">
-          Sign in to access your team&apos;s Scorecard, Rocks, To-Dos and
-          Issues.
+        <p className="text-muted-foreground mt-3 text-sm text-balance">
+          HOD L10 accounts are provisioned and managed by your team&apos;s
+          super admin. Ask them to reset your password and you&apos;ll be back
+          in shortly.
         </p>
 
-        <div className="mt-8 w-full">
-          <LoginForm from={from} />
-        </div>
+        <Link
+          href="/l10/login"
+          className="mt-8 inline-flex h-11 w-full items-center justify-center rounded-full bg-gradient-to-r from-[#f05100] via-[#fb8c00] to-[#fbbf24] text-[15px] font-semibold text-white shadow-[0_8px_32px_rgba(240,81,0,0.25)] transition-[filter] hover:brightness-110 dark:shadow-[0_8px_32px_rgba(240,81,0,0.35)]"
+        >
+          Back to sign in
+        </Link>
       </main>
     </div>
   );
