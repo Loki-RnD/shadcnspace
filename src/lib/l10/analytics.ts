@@ -236,6 +236,8 @@ export async function getTopActions(hours: number | null): Promise<ActionUsage[]
 }
 
 export interface ErrorGroup {
+  /** anchor row id — stable handle for the drill-down page */
+  gid: number;
   message: string;
   path: string;
   source: string | null;
@@ -248,6 +250,7 @@ export async function getErrorGroups(hours: number | null): Promise<ErrorGroup[]
   const h = hours ?? LIFETIME_HOURS;
   const rows = await sql`
     select
+      min(id)::int                 as gid,
       message,
       path,
       source,
@@ -261,6 +264,50 @@ export async function getErrorGroups(hours: number | null): Promise<ErrorGroup[]
     limit 15
   `;
   return rows as ErrorGroup[];
+}
+
+export interface ErrorOccurrence {
+  seen_at: string;
+  full_name: string | null;
+  user_agent: string | null;
+  stack: string | null;
+}
+
+export interface ErrorGroupDetail {
+  message: string;
+  path: string;
+  source: string | null;
+  occurrences: ErrorOccurrence[];
+}
+
+/** Full detail for one error group, addressed by any row id in the group. */
+export async function getErrorGroupDetail(
+  gid: number,
+): Promise<ErrorGroupDetail | null> {
+  const anchor = await sql`
+    select message, path, source from l10.client_errors where id = ${gid}
+  `;
+  if (anchor.length === 0) return null;
+  const { message, path, source } = anchor[0] as {
+    message: string;
+    path: string;
+    source: string | null;
+  };
+  const occurrences = await sql`
+    select
+      to_char(e.created_at, 'YYYY-MM-DD HH24:MI') as seen_at,
+      u.full_name,
+      e.user_agent,
+      e.stack
+    from l10.client_errors e
+    left join core.users u on u.id = e.user_id
+    where e.message = ${message}
+      and e.path = ${path}
+      and coalesce(e.source, '') = coalesce(${source}, '')
+    order by e.created_at desc
+    limit 20
+  `;
+  return { message, path, source, occurrences: occurrences as ErrorOccurrence[] };
 }
 
 export interface UserActivity {

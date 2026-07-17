@@ -35,9 +35,11 @@ const AMBER = "#fbbf24";
 export function PeriodFilter({
   periods,
   value,
+  basePath = "/l10/analytics",
 }: {
   periods: { key: string; label: string }[];
   value: PeriodKey;
+  basePath?: string;
 }) {
   const router = useRouter();
   return (
@@ -45,7 +47,7 @@ export function PeriodFilter({
       aria-label="Period"
       value={value}
       className="w-40"
-      onChange={(e) => router.replace(`/l10/analytics?period=${e.target.value}`)}
+      onChange={(e) => router.replace(`${basePath}?period=${e.target.value}`)}
     >
       {periods.map((p) => (
         <option key={p.key} value={p.key}>

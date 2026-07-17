@@ -1,4 +1,6 @@
+import Link from "next/link";
 import {
+  ArrowRight,
   Bug,
   ChartColumn,
   ShieldAlert,
@@ -21,6 +23,7 @@ import {
   PERIODS,
   resolvePeriod,
 } from "@/lib/l10/analytics";
+import { describeError } from "@/lib/l10/error-descriptions";
 import { getSessionUser } from "@/lib/l10/auth/session";
 import { cn } from "@/lib/utils";
 import {
@@ -231,8 +234,11 @@ export default async function AnalyticsPage({
         ) : (
           <ul className="flex flex-col gap-2">
             {pages.map((p) => (
-              <li key={p.path} className="flex items-center justify-between gap-2 text-sm">
-                <span className="truncate font-medium">{p.path}</span>
+              <li
+                key={p.path}
+                className="flex min-w-0 items-baseline justify-between gap-2 text-sm"
+              >
+                <span className="min-w-0 font-medium break-all">{p.path}</span>
                 <span className="text-muted-foreground shrink-0 text-xs">
                   {p.views} views · {p.users} users
                 </span>
@@ -252,10 +258,13 @@ export default async function AnalyticsPage({
         ) : (
           <ul className="flex flex-col gap-2">
             {actions.map((a) => (
-              <li key={a.target} className="flex items-center justify-between gap-2 text-sm">
-                <span className="truncate font-medium">{a.target}</span>
-                <span className="text-muted-foreground shrink-0 text-xs">
-                  {a.clicks} clicks · {a.users} users · {a.top_path}
+              <li
+                key={a.target}
+                className="flex min-w-0 items-baseline justify-between gap-2 text-sm"
+              >
+                <span className="min-w-0 font-medium break-words">{a.target}</span>
+                <span className="text-muted-foreground shrink-0 text-xs whitespace-nowrap">
+                  {a.clicks} clicks · {a.users} users
                 </span>
               </li>
             ))}
@@ -265,7 +274,7 @@ export default async function AnalyticsPage({
 
       <SectionCard
         title="Client errors"
-        subtitle="Uncaught errors grouped by message and page"
+        subtitle="Explained in plain language — click one to inspect it"
         className="xl:col-span-6"
       >
         {errors.length === 0 ? (
@@ -273,21 +282,38 @@ export default async function AnalyticsPage({
             No client errors recorded in this period. 🎉
           </p>
         ) : (
-          <ul className="flex flex-col gap-3">
-            {errors.map((e, i) => (
-              <li key={i} className="flex flex-col gap-0.5 text-sm">
-                <div className="flex items-center gap-2">
-                  <Bug className="size-3.5 shrink-0 text-red-500" />
-                  <span className="truncate font-medium">{e.message}</span>
-                </div>
-                <span className="text-muted-foreground pl-5.5 text-xs">
-                  {e.path}
-                  {e.source ? ` · ${e.source}` : ""} · {e.occurrences}× ·{" "}
-                  {e.affected_users} user(s) · last {e.last_seen}
-                </span>
-              </li>
-            ))}
-          </ul>
+          <>
+            <ul className="flex flex-col gap-1">
+              {errors.slice(0, 6).map((e) => {
+                const d = describeError(e.message, e.source);
+                return (
+                  <li key={e.gid} className="min-w-0">
+                    <Link
+                      href={`/l10/analytics/errors?period=${active.key}&g=${e.gid}`}
+                      className="hover:bg-muted/50 flex min-w-0 flex-col gap-0.5 rounded-md p-2 text-sm transition-colors"
+                    >
+                      <div className="flex min-w-0 items-start gap-2">
+                        <Bug className="mt-0.5 size-3.5 shrink-0 text-red-500" />
+                        <span className="min-w-0 font-medium break-words">
+                          {d.summary}
+                        </span>
+                      </div>
+                      <span className="text-muted-foreground min-w-0 pl-5.5 text-xs break-words">
+                        {e.path} · {e.occurrences}× · {e.affected_users} user(s) ·
+                        last {e.last_seen}
+                      </span>
+                    </Link>
+                  </li>
+                );
+              })}
+            </ul>
+            <Link
+              href={`/l10/analytics/errors?period=${active.key}`}
+              className="text-muted-foreground hover:text-foreground flex items-center gap-1 text-xs font-medium"
+            >
+              View all errors <ArrowRight className="size-3" />
+            </Link>
+          </>
         )}
       </SectionCard>
 
