@@ -32,6 +32,12 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(login);
   }
 
+  // Signed in with a one-time provisioned password: the only page allowed
+  // is the one where they set their own.
+  if (user.mustChangePassword && pathname !== "/l10/change-password") {
+    return NextResponse.redirect(new URL("/l10/change-password", request.url));
+  }
+
   return NextResponse.next();
 }
 

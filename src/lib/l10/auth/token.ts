@@ -12,6 +12,9 @@ export interface SessionUser {
   systemRole: "super_admin" | "hod" | "member";
   companyRole: string;
   companies: string[];
+  /** Signed in with a provisioned one-time password — must set their own
+   *  before using the app (enforced by middleware). */
+  mustChangePassword?: boolean;
 }
 
 function secretKey() {
@@ -29,6 +32,7 @@ export async function signSessionToken(user: SessionUser): Promise<string> {
     systemRole: user.systemRole,
     companyRole: user.companyRole,
     companies: user.companies,
+    ...(user.mustChangePassword ? { mustChangePassword: true } : {}),
   })
     .setProtectedHeader({ alg: "HS256" })
     .setSubject(user.id)
@@ -50,6 +54,7 @@ export async function verifySessionToken(
       systemRole: (payload.systemRole as SessionUser["systemRole"]) ?? "member",
       companyRole: (payload.companyRole as string) ?? "",
       companies: (payload.companies as string[]) ?? [],
+      mustChangePassword: payload.mustChangePassword === true,
     };
   } catch {
     return null;

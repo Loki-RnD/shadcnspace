@@ -43,7 +43,8 @@ export async function resetPassword(
 
   await sql`
     update core.users
-    set password_hash = crypt(${password}, gen_salt('bf'))
+    set password_hash = crypt(${password}, gen_salt('bf')),
+        must_change_password = false
     where id = ${row.user_id}
   `;
   await sql`

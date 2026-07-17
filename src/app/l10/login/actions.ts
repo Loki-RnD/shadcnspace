@@ -29,6 +29,7 @@ export async function login(
   const [user] = await sql`
     select
       u.id, u.full_name, u.email, u.system_role, u.company_role, u.active,
+      u.must_change_password,
       coalesce((
         select array_agg(b.short_name order by b.short_name)
         from core.user_business_access ba
@@ -53,7 +54,11 @@ export async function login(
     systemRole: user.system_role,
     companyRole: user.company_role,
     companies: user.companies,
+    mustChangePassword: user.must_change_password,
   } satisfies SessionUser, { remember });
+
+  // Provisioned passwords are one-time: force a personal password first.
+  if (user.must_change_password) redirect("/l10/change-password");
 
   // Only follow same-app redirect targets
   redirect(from.startsWith("/l10") ? from : "/l10");
