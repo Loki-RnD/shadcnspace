@@ -19,8 +19,8 @@ export async function changePassword(
   const password = String(formData.get("password") ?? "");
   const confirm = String(formData.get("confirm") ?? "");
 
-  if (password.length < 8) {
-    return { error: "Password must be at least 8 characters." };
+  if (password.length < 6) {
+    return { error: "Password must be at least 6 characters." };
   }
   if (password !== confirm) {
     return { error: "Passwords don't match." };

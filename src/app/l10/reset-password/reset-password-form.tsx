@@ -32,9 +32,9 @@ export function ResetPasswordForm({ token }: { token: string }) {
             id="password"
             name="password"
             type={showPassword ? "text" : "password"}
-            placeholder="At least 8 characters"
+            placeholder="At least 6 characters"
             autoComplete="new-password"
-            minLength={8}
+            minLength={6}
             required
             className={cn(fieldClass, "pr-11")}
           />
@@ -61,7 +61,7 @@ export function ResetPasswordForm({ token }: { token: string }) {
           type={showPassword ? "text" : "password"}
           placeholder="Repeat your new password"
           autoComplete="new-password"
-          minLength={8}
+          minLength={6}
           required
           className={fieldClass}
         />

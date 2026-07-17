@@ -6,6 +6,7 @@ import {
   ArrowUpDown,
   ChevronLeft,
   ChevronRight,
+  KeyRound,
   Pencil,
   Search,
   Trash2,
@@ -37,6 +38,7 @@ import {
 import type { AdminUserRow, OrgBusiness } from "@/lib/l10/identity";
 import { deleteUser } from "./actions";
 import { ActiveToggle } from "./active-toggle";
+import { ResetPasswordDialog } from "./reset-password-dialog";
 import { UserFormDialog } from "./user-form-dialog";
 
 const ROLE_FILTERS = [
@@ -83,6 +85,7 @@ export function UsersTable({
   const [formOpen, setFormOpen] = useState(false);
   const [editTarget, setEditTarget] = useState<AdminUserRow | undefined>();
   const [deleteTarget, setDeleteTarget] = useState<AdminUserRow | undefined>();
+  const [resetTarget, setResetTarget] = useState<AdminUserRow | undefined>();
   const [pending, startTransition] = useTransition();
 
   const filtered = useMemo(() => {
@@ -285,6 +288,14 @@ export function UsersTable({
                     <Button
                       variant="ghost"
                       size="icon-xs"
+                      aria-label={`Reset password for ${u.full_name}`}
+                      onClick={() => setResetTarget(u)}
+                    >
+                      <KeyRound className="size-3.5" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon-xs"
                       aria-label={`Delete ${u.full_name}`}
                       className="text-destructive hover:text-destructive"
                       onClick={() => setDeleteTarget(u)}
@@ -352,6 +363,11 @@ export function UsersTable({
         user={editTarget}
         open={formOpen}
         onOpenChange={setFormOpen}
+      />
+
+      <ResetPasswordDialog
+        user={resetTarget}
+        onClose={() => setResetTarget(undefined)}
       />
 
       {/* Delete confirmation */}

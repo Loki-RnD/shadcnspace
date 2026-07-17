@@ -39,10 +39,13 @@ export async function createUser(input: CreateUserInput) {
   }
 
   try {
+    // Admin-issued passwords are one-time: the user must set their own
+    // at first login (must_change_password).
     const [user] = await sql`
       insert into core.users
         (user_code, full_name, email, password_hash,
-         system_role, company_role, dept_access_all, sub_dept_access_all)
+         system_role, company_role, dept_access_all, sub_dept_access_all,
+         must_change_password)
       values (
         (select lpad((coalesce(max(user_code::int), 0) + 1)::text, 2, '0') from core.users),
         ${input.fullName.trim()},
@@ -51,7 +54,8 @@ export async function createUser(input: CreateUserInput) {
         ${input.systemRole},
         ${input.companyRole.trim() || "HOD"},
         ${input.deptAccessAll},
-        ${input.subDeptAccessAll}
+        ${input.subDeptAccessAll},
+        true
       )
       returning id
     `;
@@ -124,8 +128,11 @@ export async function updateUser(input: UpdateUserInput) {
       where id = ${input.userId}
     `;
     if (input.password) {
+      // Admin-set passwords are one-time — force a personal password at
+      // the user's next login.
       await sql`update core.users
-                set password_hash = crypt(${input.password}, gen_salt('bf'))
+                set password_hash = crypt(${input.password}, gen_salt('bf')),
+                    must_change_password = true
                 where id = ${input.userId}`;
     }
 
@@ -162,6 +169,36 @@ export async function updateUser(input: UpdateUserInput) {
         : msg,
     };
   }
+}
+
+export async function resetUserPassword(userId: string, password: string) {
+  const actor = await assertSuperAdmin();
+
+  if (password.length < 6) {
+    return {
+      ok: false as const,
+      error: "One-time password must be at least 6 characters.",
+    };
+  }
+
+  const [target] = await sql`
+    select full_name, email from core.users where id = ${userId}`;
+  if (!target) return { ok: false as const, error: "User not found." };
+
+  await sql`
+    update core.users
+    set password_hash = crypt(${password}, gen_salt('bf')),
+        must_change_password = ${target.email.toLowerCase() !== actor.email.toLowerCase()}
+    where id = ${userId}
+  `;
+  // Outstanding email-reset links would bypass the one-time flow — void them.
+  await sql`
+    delete from core.password_reset_tokens
+    where user_id = ${userId} and used_at is null
+  `;
+
+  revalidatePath("/l10/admin");
+  return { ok: true as const, name: target.full_name as string };
 }
 
 export async function deleteUser(userId: string) {

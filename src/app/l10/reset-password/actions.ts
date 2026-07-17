@@ -20,8 +20,8 @@ export async function resetPassword(
   if (!token) {
     return { error: "This reset link is invalid. Request a new one." };
   }
-  if (password.length < 8) {
-    return { error: "Password must be at least 8 characters." };
+  if (password.length < 6) {
+    return { error: "Password must be at least 6 characters." };
   }
   if (password !== confirm) {
     return { error: "Passwords don't match." };
