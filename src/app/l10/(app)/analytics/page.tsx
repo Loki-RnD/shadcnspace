@@ -23,6 +23,7 @@ import {
   PERIODS,
   resolvePeriod,
 } from "@/lib/l10/analytics";
+import { groupActions } from "@/lib/l10/action-groups";
 import { describeError } from "@/lib/l10/error-descriptions";
 import { getSessionUser } from "@/lib/l10/auth/session";
 import { cn } from "@/lib/utils";
@@ -141,6 +142,7 @@ export default async function AnalyticsPage({
     ]);
 
   const totalRatings = ratings.distribution.reduce((s, r) => s + r.count, 0);
+  const actionGroups = groupActions(actions);
 
   return (
     <div className="grid grid-cols-12 gap-6">
@@ -249,26 +251,46 @@ export default async function AnalyticsPage({
       </SectionCard>
 
       <SectionCard
-        title="Most clicked controls"
-        subtitle="Buttons and links by label (feature usage)"
+        title="Interactions"
+        subtitle="Clicks grouped by what they do — click a group for detail"
         className="xl:col-span-6"
       >
-        {actions.length === 0 ? (
+        {actionGroups.length === 0 ? (
           EMPTY
         ) : (
-          <ul className="flex flex-col gap-2">
-            {actions.map((a) => (
-              <li
-                key={a.target}
-                className="flex min-w-0 items-baseline justify-between gap-2 text-sm"
-              >
-                <span className="min-w-0 font-medium break-words">{a.target}</span>
-                <span className="text-muted-foreground shrink-0 text-xs whitespace-nowrap">
-                  {a.clicks} clicks · {a.users} users
-                </span>
-              </li>
-            ))}
-          </ul>
+          <>
+            <ul className="flex flex-col gap-1">
+              {actionGroups.map((g) => (
+                <li key={g.category} className="min-w-0">
+                  <Link
+                    href={`/l10/analytics/actions?period=${active.key}&cat=${encodeURIComponent(g.category)}`}
+                    className="hover:bg-muted/50 flex min-w-0 flex-col gap-0.5 rounded-md p-2 transition-colors"
+                  >
+                    <div className="flex min-w-0 items-baseline justify-between gap-2 text-sm">
+                      <span className="min-w-0 font-medium break-words">
+                        {g.category}
+                      </span>
+                      <span className="text-muted-foreground shrink-0 text-xs whitespace-nowrap">
+                        {g.clicks} clicks
+                      </span>
+                    </div>
+                    <span className="text-muted-foreground min-w-0 text-xs break-words">
+                      {g.controls
+                        .slice(0, 3)
+                        .map((c) => `${c.label} (${c.clicks})`)
+                        .join(" · ")}
+                    </span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+            <Link
+              href={`/l10/analytics/actions?period=${active.key}`}
+              className="text-muted-foreground hover:text-foreground flex items-center gap-1 text-xs font-medium"
+            >
+              View all interactions <ArrowRight className="size-3" />
+            </Link>
+          </>
         )}
       </SectionCard>
 

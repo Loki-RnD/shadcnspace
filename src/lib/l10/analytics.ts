@@ -214,6 +214,7 @@ export interface ActionUsage {
   clicks: number;
   users: number;
   top_path: string;
+  last_used: string;
 }
 
 export async function getTopActions(hours: number | null): Promise<ActionUsage[]> {
@@ -223,14 +224,15 @@ export async function getTopActions(hours: number | null): Promise<ActionUsage[]
       target,
       count(*)::int                 as clicks,
       count(distinct user_id)::int  as users,
-      mode() within group (order by path) as top_path
+      mode() within group (order by path) as top_path,
+      to_char(max(created_at), 'YYYY-MM-DD HH24:MI') as last_used
     from l10.analytics_events
     where event_type = 'action'
       and target is not null
       and created_at > now() - make_interval(hours => ${h})
     group by target
     order by clicks desc
-    limit 15
+    limit 300
   `;
   return rows as ActionUsage[];
 }
