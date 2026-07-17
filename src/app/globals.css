@@ -11,6 +11,8 @@
   --font-serif: Georgia, "Times New Roman", Times, serif;
   --font-mono: var(--font-jetbrains-mono), ui-monospace, "Cascadia Mono",
     monospace;
+  --font-display: var(--font-montserrat), ui-sans-serif, system-ui, sans-serif;
+  --font-accent: var(--font-lora), Georgia, serif;
   --font-sans--font-feature-settings: "cv02", "cv03", "cv04", "cv11";
 
   --radius-sm: calc(var(--radius) - 4px);

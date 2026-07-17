@@ -1,6 +1,12 @@
 import "./globals.css";
 import type { Metadata } from "next";
-import { Plus_Jakarta_Sans, JetBrains_Mono } from "next/font/google";
+import {
+  Plus_Jakarta_Sans,
+  JetBrains_Mono,
+  Montserrat,
+  Lora,
+} from "next/font/google";
+import { Analytics } from "@vercel/analytics/next";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster } from "sonner";
 
@@ -12,6 +18,16 @@ const jakarta = Plus_Jakarta_Sans({
 const jetbrainsMono = JetBrains_Mono({
   subsets: ["latin"],
   variable: "--font-jetbrains-mono",
+});
+
+const montserrat = Montserrat({
+  subsets: ["latin"],
+  variable: "--font-montserrat",
+});
+
+const lora = Lora({
+  subsets: ["latin"],
+  variable: "--font-lora",
 });
 
 export const metadata: Metadata = {
@@ -32,13 +48,14 @@ export default function RootLayout({
     <html
       lang="en"
       suppressHydrationWarning
-      className={`${jakarta.variable} ${jetbrainsMono.variable}`}
+      className={`${jakarta.variable} ${jetbrainsMono.variable} ${montserrat.variable} ${lora.variable}`}
     >
       <body>
         <Toaster position="top-center" />
         <TooltipProvider>
           {children}
         </TooltipProvider>
+        <Analytics />
       </body>
     </html>
   );

@@ -38,11 +38,11 @@ export default async function LoginPage({
           priority
         />
 
-        <h1 className="text-foreground mt-6 text-center text-3xl font-semibold tracking-tight">
-          Loki &amp; PSK
-        </h1>
-        <p className="text-muted-foreground mt-2 text-center font-mono text-xs font-medium tracking-[0.22em] uppercase">
+        <h1 className="text-foreground font-display mt-6 text-center text-3xl font-semibold tracking-tight">
           EOS Platform
+        </h1>
+        <p className="text-muted-foreground font-accent mt-2 text-center text-xs font-semibold tracking-[0.22em] uppercase">
+          For LVL/PSK Teams
         </p>
 
         <h2 className="text-foreground mt-6 text-center text-xl font-semibold tracking-tight">
