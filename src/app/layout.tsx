@@ -36,7 +36,7 @@ export const metadata: Metadata = {
   description:
     "Loki Ventures EOS platform: Level 10 meetings, Scorecard, Rocks, To-Dos and Issues.",
   icons: [{ url: "/images/l10/eos-bulb.png", type: "image/png", rel: "icon" }],
-  metadataBase: new URL("https://hod-l10.rnd-loki.com"),
+  metadataBase: new URL("https://eos.rnd-loki.com"),
   robots: { index: false, follow: false },
 };
 
