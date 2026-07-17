@@ -29,7 +29,7 @@ export function UpdateNotifier() {
         }
         if (id !== knownId.current) {
           notified.current = true;
-          toast("HOD L10 has been updated", {
+          toast("EOS has been updated", {
             description: "Reload to get the latest version.",
             duration: Infinity,
             action: {

@@ -7,7 +7,7 @@ import { ThemeToggle } from "@/components/l10/theme-toggle";
 import { LoginForm } from "./login-form";
 
 export const metadata: Metadata = {
-  title: "Sign in — HOD L10",
+  title: "Sign in — EOS",
 };
 
 export default async function LoginPage({
@@ -30,31 +30,26 @@ export default async function LoginPage({
 
       <main className="relative z-10 flex w-full max-w-sm flex-col items-center">
         <Image
-          src="/images/l10/eos-logo-plain.png"
-          alt="EOS"
-          width={168}
-          height={64}
-          className="h-16 w-auto dark:hidden"
-          priority
-        />
-        <Image
-          src="/images/l10/eos-logo-dark-plain.png"
-          alt="EOS"
-          width={168}
-          height={64}
-          className="hidden h-16 w-auto dark:block"
+          src="/images/l10/we-run-on-eos-badge.png"
+          alt="We run on EOS"
+          width={200}
+          height={131}
+          className="h-32 w-auto drop-shadow-[0_12px_40px_rgba(240,81,0,0.2)] dark:drop-shadow-[0_12px_48px_rgba(240,81,0,0.35)]"
           priority
         />
 
-        <h1 className="text-foreground mt-8 text-center text-3xl font-semibold tracking-tight">
-          Welcome back
+        <h1 className="text-foreground mt-6 text-center text-3xl font-semibold tracking-tight">
+          Loki &amp; PSK
         </h1>
-        <p className="text-muted-foreground mt-2 text-center text-sm text-balance">
-          Sign in to access your team&apos;s Scorecard, Rocks, To-Dos and
-          Issues.
+        <p className="text-muted-foreground mt-2 text-center font-mono text-xs font-medium tracking-[0.22em] uppercase">
+          EOS Platform
         </p>
 
-        <div className="mt-8 w-full">
+        <h2 className="text-foreground mt-6 text-center text-xl font-semibold tracking-tight">
+          Welcome back
+        </h2>
+
+        <div className="mt-6 w-full">
           <LoginForm from={from} />
         </div>
       </main>

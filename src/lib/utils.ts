@@ -1,4 +1,3 @@
-import { config } from "@/config";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 
@@ -25,10 +24,4 @@ export function groupBy<T, K extends keyof T>(
     acc[keyValue].push(item);
     return acc;
   }, {} as GroupBy<T, K>);
-}
-
-export function absoluteUrl(path: string) {
-  return process.env.NODE_ENV === "development"
-    ? `http://localhost:3000/${path}`
-    : `${config.appUrl}/${path}`;
 }

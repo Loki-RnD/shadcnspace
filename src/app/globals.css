@@ -1,4 +1,3 @@
-@import url('https://fonts.googleapis.com/css2?family=Google+Sans:ital,opsz,wght@0,17..18,400..700;1,17..18,400..700&display=swap');
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
@@ -8,6 +7,10 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
+  --font-sans: var(--font-jakarta), ui-sans-serif, system-ui, sans-serif;
+  --font-serif: Georgia, "Times New Roman", Times, serif;
+  --font-mono: var(--font-jetbrains-mono), ui-monospace, "Cascadia Mono",
+    monospace;
   --font-sans--font-feature-settings: "cv02", "cv03", "cv04", "cv11";
 
   --radius-sm: calc(var(--radius) - 4px);
@@ -149,7 +152,7 @@
 }
 
 body {
-  font-family: "Google Sans", sans-serif;
+  font-family: var(--font-sans);
 }
 
 @layer base {
@@ -171,7 +174,7 @@ body {
   h4,
   h5,
   h6 {
-    font-family: var(--font-space-grotesk);
+    font-family: var(--font-sans);
   }
 
   .highlight-marker {
@@ -374,7 +377,7 @@ body:has(.l10-theme) {
 }
 
 .l10-theme {
-  font-family: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  font-family: var(--font-sans);
 }
 
 /* Fluid content width for /l10 — full width so wide screens are utilised.

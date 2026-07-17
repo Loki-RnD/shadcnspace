@@ -45,9 +45,6 @@ export function L10Header({ user }: { user: SessionUser }) {
               className="hidden h-8 w-auto dark:block"
               priority
             />
-            <span className="text-muted-foreground border-border border-s ps-2.5 text-base font-semibold tracking-tight">
-              HOD&nbsp;L10
-            </span>
           </Link>
 
           <div className="border-border ms-2 hidden border-s ps-4 sm:block">

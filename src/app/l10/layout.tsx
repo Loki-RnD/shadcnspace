@@ -6,9 +6,9 @@ import { L10ThemeProvider } from "@/components/l10/theme-provider";
 import { UpdateNotifier } from "@/components/l10/update-notifier";
 
 export const metadata: Metadata = {
-  title: "HOD L10 — Level 10 Meeting Platform",
+  title: "EOS — Loki Ventures",
   description:
-    "Loki Ventures Level 10 meeting platform: Scorecard, Rocks, To-Dos and Issues.",
+    "Loki Ventures EOS platform: Level 10 meetings, Scorecard, Rocks, To-Dos and Issues.",
   icons: [{ url: "/images/l10/eos-bulb.png", type: "image/png", rel: "icon" }],
 };
 

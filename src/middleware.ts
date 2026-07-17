@@ -5,14 +5,16 @@ import { SESSION_COOKIE, verifySessionToken } from "@/lib/l10/auth/token";
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // This deployment serves only the L10 app — send everything else
-  // (the forked shadcnspace registry site) to /l10.
-  if (!pathname.startsWith("/l10")) {
-    return NextResponse.redirect(new URL("/l10", request.url));
-  }
-
   const token = request.cookies.get(SESSION_COOKIE)?.value;
   const user = token ? await verifySessionToken(token) : null;
+
+  // This deployment serves only the L10 app — anything outside /l10 goes
+  // straight to the dashboard (signed in) or the login page (signed out).
+  if (!pathname.startsWith("/l10")) {
+    return NextResponse.redirect(
+      new URL(user ? "/l10" : "/l10/login", request.url),
+    );
+  }
 
   const isPublicAuthPage =
     pathname === "/l10/login" || pathname === "/l10/forgot-password";

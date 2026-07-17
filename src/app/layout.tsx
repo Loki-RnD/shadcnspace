@@ -1,69 +1,26 @@
 import "./globals.css";
 import type { Metadata } from "next";
+import { Plus_Jakarta_Sans, JetBrains_Mono } from "next/font/google";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster } from "sonner";
 
-export const metadata: Metadata = {
-  title: "Craft modern UIs faster with Shadcn components, blocks & templates",
-  description:
-    "Craft modern UIs faster with Shadcn components, blocks & templates",
-  keywords: [
-    "Shadcn Space",
-    "Shadcn UI components",
-    "UI blocks for developers",
-    "Shadcn UI code snippets",
-    "Shadcn UI examples",
-    "Shadcn UI customization",
-    "Free Shadcn ui",
+const jakarta = Plus_Jakarta_Sans({
+  subsets: ["latin"],
+  variable: "--font-jakarta",
+});
 
-    "Custom Shadcn UI components",
-  ],
-  icons: [
-    {
-      url: "/images/apple-touch-icon.png",
-      type: "image/png",
-      rel: "apple-touch-icon",
-    },
-    {
-      sizes: "16x16",
-      url: "/images/favicon.png",
-      type: "image/png",
-      rel: "icon",
-    },
-    {
-      sizes: "32x32",
-      url: "/images/favicon.png",
-      type: "image/png",
-      rel: "icon",
-    },
-  ],
-  metadataBase: new URL("https://shadcnspace.com"),
-  openGraph: {
-    title: "Craft modern UIs faster with Shadcn components, blocks & templates",
-    description:
-      "Craft modern UIs faster with Shadcn components, blocks & templates",
-    type: "website",
-    url: "https://shadcnspace.com",
-    siteName: "Shadcn Space",
-    locale: "en_US",
-    images: [
-      {
-        url: "/images/og-image.png",
-        height: 630,
-        width: 1200,
-        alt: "Effortless Shadcn UI Component Previews & Code Snippets",
-      },
-    ],
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "Craft modern UIs faster with Shadcn components, blocks & templates",
-    description:
-      "Craft modern UIs faster with Shadcn components, blocks & templates",
-    images: ["/images/og-image.png"],
-    creator: "@shadcnspace",
-    site: "@shadcnspace",
-  },
+const jetbrainsMono = JetBrains_Mono({
+  subsets: ["latin"],
+  variable: "--font-jetbrains-mono",
+});
+
+export const metadata: Metadata = {
+  title: "EOS — Loki Ventures",
+  description:
+    "Loki Ventures EOS platform: Level 10 meetings, Scorecard, Rocks, To-Dos and Issues.",
+  icons: [{ url: "/images/l10/eos-bulb.png", type: "image/png", rel: "icon" }],
+  metadataBase: new URL("https://hod-l10.rnd-loki.com"),
+  robots: { index: false, follow: false },
 };
 
 export default function RootLayout({
@@ -72,12 +29,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <head>
-        <style>
-          @import url('https://fonts.googleapis.com/css2?family=Google+Sans:ital,opsz,wght@0,17..18,400..700;1,17..18,400..700&display=swap');
-        </style>
-      </head>
+    <html
+      lang="en"
+      suppressHydrationWarning
+      className={`${jakarta.variable} ${jetbrainsMono.variable}`}
+    >
       <body>
         <Toaster position="top-center" />
         <TooltipProvider>

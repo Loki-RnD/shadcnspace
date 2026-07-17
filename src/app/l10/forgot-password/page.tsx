@@ -5,7 +5,7 @@ import Link from "next/link";
 import { ThemeToggle } from "@/components/l10/theme-toggle";
 
 export const metadata: Metadata = {
-  title: "Forgot password — HOD L10",
+  title: "Forgot password — EOS",
 };
 
 export default function ForgotPasswordPage() {
@@ -20,27 +20,19 @@ export default function ForgotPasswordPage() {
 
       <main className="relative z-10 flex w-full max-w-sm flex-col items-center text-center">
         <Image
-          src="/images/l10/eos-logo-plain.png"
-          alt="EOS"
-          width={126}
-          height={48}
-          className="h-12 w-auto dark:hidden"
-          priority
-        />
-        <Image
-          src="/images/l10/eos-logo-dark-plain.png"
-          alt="EOS"
-          width={126}
-          height={48}
-          className="hidden h-12 w-auto dark:block"
+          src="/images/l10/we-run-on-eos-badge.png"
+          alt="We run on EOS"
+          width={160}
+          height={105}
+          className="h-24 w-auto drop-shadow-[0_12px_40px_rgba(240,81,0,0.2)] dark:drop-shadow-[0_12px_48px_rgba(240,81,0,0.35)]"
           priority
         />
 
-        <h1 className="text-foreground mt-8 text-2xl font-semibold tracking-tight">
+        <h1 className="text-foreground mt-6 text-2xl font-semibold tracking-tight">
           Reset your password
         </h1>
         <p className="text-muted-foreground mt-3 text-sm text-balance">
-          HOD L10 accounts are provisioned and managed by your team&apos;s
+          EOS accounts are provisioned and managed by your team&apos;s
           super admin. Ask them to reset your password and you&apos;ll be back
           in shortly.
         </p>

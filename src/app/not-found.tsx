@@ -44,7 +44,7 @@ export default function NotFound() {
               className="py-2.5 px-5 h-auto bg-linear-to-b from-background from-30% to-[#1118270a]"
             >
               <Link
-                href="/"
+                href="/l10"
                 className="flex items-center gap-2 text-base! font-medium leading-snug tracking-[0.2px]"
               >
                 Back to home
