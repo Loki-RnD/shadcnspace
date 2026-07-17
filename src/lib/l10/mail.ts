@@ -2,6 +2,8 @@ import "server-only";
 
 import nodemailer from "nodemailer";
 
+import { EMAIL_BADGE_BASE64 } from "./email-badge";
+
 // Single mail entry point so the transport (SMTP2GO today, Resend or
 // anything else tomorrow) can be swapped without touching callers.
 
@@ -24,7 +26,10 @@ function getTransport() {
 
 export interface MailAttachment {
   filename: string;
-  href: string;
+  content: string;
+  encoding: "base64";
+  contentType: string;
+  contentDisposition: "inline";
   cid: string;
 }
 
@@ -41,21 +46,22 @@ export async function sendMail(opts: {
 
 const ORANGE = "#f05100";
 const FONT = "'Plus Jakarta Sans','Segoe UI',Arial,Helvetica,sans-serif";
-// Email assets must be publicly reachable — a dev-server origin would
-// never render in a mail client, so always point at production.
-const ASSET_BASE = "https://hod-l10.rnd-loki.com";
 
 // Mirrors the light-mode login page: warm cream backdrop, white rounded
 // card, EOS badge hero, letter-spaced eyebrow and the orange gradient CTA.
 export function passwordResetEmail(name: string, resetUrl: string) {
   const firstName = name.trim().split(" ")[0] || "there";
-  // The badge is embedded as an inline CID attachment — remote image
-  // URLs are blocked or proxied by most mail clients.
+  // The badge travels inside the message as an inline CID attachment —
+  // remote image URLs are blocked or proxied by most mail clients, and
+  // the bytes are baked in so nothing is fetched at send time.
   const badgeCid = "eos-badge";
   const attachments: MailAttachment[] = [
     {
       filename: "we-run-on-eos.png",
-      href: `${ASSET_BASE}/images/l10/we-run-on-eos-badge.png`,
+      content: EMAIL_BADGE_BASE64,
+      encoding: "base64",
+      contentType: "image/png",
+      contentDisposition: "inline",
       cid: badgeCid,
     },
   ];
