@@ -13,11 +13,11 @@ export const metadata: Metadata = {
 export default async function LoginPage({
   searchParams,
 }: {
-  searchParams: Promise<{ from?: string }>;
+  searchParams: Promise<{ from?: string; reset?: string }>;
 }) {
   if (await getSessionUser()) redirect("/l10");
 
-  const { from } = await searchParams;
+  const { from, reset } = await searchParams;
 
   return (
     <div className="relative flex min-h-svh flex-col items-center justify-center overflow-hidden bg-[#f7f4f0] px-4 py-12 dark:bg-[#0b0a09]">
@@ -48,6 +48,12 @@ export default async function LoginPage({
         <h2 className="text-foreground mt-6 text-center text-xl font-semibold tracking-tight">
           Welcome back
         </h2>
+
+        {reset ? (
+          <p className="mt-4 w-full rounded-xl bg-emerald-500/10 px-4 py-2.5 text-center text-sm text-emerald-700 dark:text-emerald-400">
+            Your password has been updated. Sign in with your new password.
+          </p>
+        ) : null}
 
         <div className="mt-6 w-full">
           <LoginForm from={from} />

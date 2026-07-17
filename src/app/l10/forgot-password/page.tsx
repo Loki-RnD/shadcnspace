@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import Image from "next/image";
-import Link from "next/link";
 
 import { ThemeToggle } from "@/components/l10/theme-toggle";
+import { ForgotPasswordForm } from "./forgot-password-form";
 
 export const metadata: Metadata = {
   title: "Forgot password — EOS",
@@ -32,17 +32,13 @@ export default function ForgotPasswordPage() {
           Reset your password
         </h1>
         <p className="text-muted-foreground mt-3 text-sm text-balance">
-          EOS accounts are provisioned and managed by your team&apos;s
-          super admin. Ask them to reset your password and you&apos;ll be back
-          in shortly.
+          Enter the email you use for EOS and we&apos;ll send you a link to
+          choose a new password.
         </p>
 
-        <Link
-          href="/l10/login"
-          className="mt-8 inline-flex h-11 w-full items-center justify-center rounded-full bg-gradient-to-r from-[#f05100] via-[#fb8c00] to-[#fbbf24] text-[15px] font-semibold text-white shadow-[0_8px_32px_rgba(240,81,0,0.25)] transition-[filter] hover:brightness-110 dark:shadow-[0_8px_32px_rgba(240,81,0,0.35)]"
-        >
-          Back to sign in
-        </Link>
+        <div className="mt-8 w-full">
+          <ForgotPasswordForm />
+        </div>
       </main>
     </div>
   );

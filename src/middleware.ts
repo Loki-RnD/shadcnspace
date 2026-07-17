@@ -17,7 +17,9 @@ export async function middleware(request: NextRequest) {
   }
 
   const isPublicAuthPage =
-    pathname === "/l10/login" || pathname === "/l10/forgot-password";
+    pathname === "/l10/login" ||
+    pathname === "/l10/forgot-password" ||
+    pathname === "/l10/reset-password";
   if (isPublicAuthPage) {
     return user
       ? NextResponse.redirect(new URL("/l10", request.url))
