@@ -3,14 +3,16 @@
 import { revalidatePath } from "next/cache";
 
 import { sql } from "@/lib/l10/db";
-import { currentUser } from "@/components/l10/members";
+import { getSessionUser } from "@/lib/l10/auth/session";
 
-// Placeholder gate until session auth lands: server actions re-check the
-// acting user's system role so the check isn't UI-only.
-function assertSuperAdmin() {
-  if (currentUser.systemRole !== "super_admin") {
+// Server actions re-check the acting user's session role so the
+// super-admin gate isn't UI-only.
+async function assertSuperAdmin() {
+  const user = await getSessionUser();
+  if (user?.systemRole !== "super_admin") {
     throw new Error("Not authorized: super admin required");
   }
+  return user;
 }
 
 export interface CreateUserInput {
@@ -27,7 +29,7 @@ export interface CreateUserInput {
 }
 
 export async function createUser(input: CreateUserInput) {
-  assertSuperAdmin();
+  await assertSuperAdmin();
 
   if (!input.fullName.trim() || !input.email.trim() || input.password.length < 6) {
     return { ok: false as const, error: "Name, email and a password of 6+ characters are required." };
@@ -85,7 +87,7 @@ export async function createUser(input: CreateUserInput) {
 }
 
 export async function setUserActive(userId: string, active: boolean) {
-  assertSuperAdmin();
+  await assertSuperAdmin();
   await sql`update core.users set active = ${active} where id = ${userId}`;
   revalidatePath("/l10/admin");
   return { ok: true as const };
@@ -98,7 +100,7 @@ export interface UpdateUserInput extends Omit<CreateUserInput, "password"> {
 }
 
 export async function updateUser(input: UpdateUserInput) {
-  assertSuperAdmin();
+  await assertSuperAdmin();
 
   if (!input.fullName.trim() || !input.email.trim()) {
     return { ok: false as const, error: "Name and email are required." };
@@ -163,12 +165,12 @@ export async function updateUser(input: UpdateUserInput) {
 }
 
 export async function deleteUser(userId: string) {
-  assertSuperAdmin();
+  const actor = await assertSuperAdmin();
 
   const [target] = await sql`
     select email, system_role from core.users where id = ${userId}`;
   if (!target) return { ok: false as const, error: "User not found." };
-  if (target.email === currentUser.email) {
+  if (target.email.toLowerCase() === actor.email.toLowerCase()) {
     return { ok: false as const, error: "You cannot delete your own account." };
   }
   if (target.system_role === "super_admin") {

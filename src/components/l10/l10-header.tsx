@@ -104,19 +104,20 @@ export function L10Header({ user }: { user: SessionUser }) {
               }
             >
               <Avatar className="size-7">
-                <AvatarFallback
-                  className={cn("text-xs font-medium", currentUser.color)}
-                >
-                  {currentUser.initials}
+                <AvatarFallback className={cn("text-xs font-medium", color)}>
+                  {initials}
                 </AvatarFallback>
               </Avatar>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-52">
               <DropdownMenuLabel>
                 <div className="flex flex-col">
-                  <span>{currentUser.name}</span>
+                  <span>{user.name}</span>
                   <span className="text-muted-foreground text-xs font-normal">
-                    {currentUser.companyRole} · {currentUser.area}
+                    {user.companyRole}
+                    {user.companies.length > 0
+                      ? ` · ${user.companies.join(", ")}`
+                      : ""}
                   </span>
                 </div>
               </DropdownMenuLabel>
@@ -124,7 +125,10 @@ export function L10Header({ user }: { user: SessionUser }) {
               <DropdownMenuItem>Profile</DropdownMenuItem>
               <DropdownMenuItem>Team settings</DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem variant="destructive">
+              <DropdownMenuItem
+                variant="destructive"
+                onClick={() => logout()}
+              >
                 Sign out
               </DropdownMenuItem>
             </DropdownMenuContent>

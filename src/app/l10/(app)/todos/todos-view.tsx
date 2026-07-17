@@ -1,0 +1,399 @@
+"use client";
+
+import { useEffect, useMemo, useState, useTransition } from "react";
+import { toast } from "sonner";
+import {
+  ArrowDownToLine,
+  ChevronDown,
+  Ellipsis,
+  Pencil,
+  Plus,
+  Search,
+  Trash2,
+} from "lucide-react";
+
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { NativeSelect } from "@/components/ui/native-select";
+import { OwnerAvatar } from "@/components/l10/owner-avatar";
+import type { MemberRow } from "@/lib/l10/scorecard";
+import type { TodoRow } from "@/lib/l10/work";
+import {
+  createTodo,
+  deleteTodo,
+  dropToIssue,
+  toggleTodo,
+  updateTodo,
+} from "./actions";
+
+const df = new Intl.DateTimeFormat("en-GB", {
+  day: "numeric",
+  month: "short",
+  year: "numeric",
+});
+
+function TodoDialog({
+  open,
+  onOpenChange,
+  teamId,
+  members,
+  isPrivate,
+  todo,
+}: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  teamId: string;
+  members: MemberRow[];
+  isPrivate: boolean;
+  todo: TodoRow | null;
+}) {
+  const [title, setTitle] = useState("");
+  const [ownerId, setOwnerId] = useState("");
+  const [dueDate, setDueDate] = useState("");
+  const [pending, startTransition] = useTransition();
+
+  useEffect(() => {
+    if (!open) return;
+    setTitle(todo?.title ?? "");
+    setOwnerId(todo?.owner_id ?? "");
+    setDueDate(todo?.due_date?.slice(0, 10) ?? "");
+  }, [open, todo]);
+
+  function submit() {
+    startTransition(async () => {
+      const base = {
+        teamId,
+        title,
+        ownerId: ownerId || null,
+        dueDate: dueDate || null,
+        isPrivate,
+      };
+      const res = todo
+        ? await updateTodo({ ...base, todoId: todo.id })
+        : await createTodo(base);
+      if (!res.ok) {
+        toast.error(res.error);
+        return;
+      }
+      toast.success(todo ? "To-Do updated" : "To-Do created");
+      onOpenChange(false);
+    });
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>{todo ? "Edit To-Do" : "Create To-Do"}</DialogTitle>
+          <DialogDescription>
+            {isPrivate
+              ? "Private — only visible to you."
+              : "Team To-Do — visible to the whole team."}
+          </DialogDescription>
+        </DialogHeader>
+        <div className="flex flex-col gap-3">
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="td-title">Title</Label>
+            <Input
+              id="td-title"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="What needs to get done?"
+            />
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            {!isPrivate ? (
+              <div className="flex flex-col gap-1.5">
+                <Label htmlFor="td-owner">Owner</Label>
+                <NativeSelect
+                  id="td-owner"
+                  value={ownerId}
+                  onChange={(e) => setOwnerId(e.target.value)}
+                >
+                  <option value="">No owner</option>
+                  {members.map((m) => (
+                    <option key={m.id} value={m.id}>
+                      {m.full_name}
+                    </option>
+                  ))}
+                </NativeSelect>
+              </div>
+            ) : null}
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="td-due">Due date</Label>
+              <Input
+                id="td-due"
+                type="date"
+                value={dueDate}
+                onChange={(e) => setDueDate(e.target.value)}
+              />
+            </div>
+          </div>
+        </div>
+        <DialogFooter>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>
+            Cancel
+          </Button>
+          <Button
+            onClick={submit}
+            disabled={pending || !title.trim()}
+            className="bg-[#f05100] text-white hover:bg-[#f05100]/90"
+          >
+            {pending ? "Saving…" : todo ? "Save Changes" : "Create To-Do"}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+export function TodosView({
+  teamId,
+  todos,
+  members,
+  isPrivate,
+  archived,
+}: {
+  teamId: string;
+  todos: TodoRow[];
+  members: MemberRow[];
+  isPrivate: boolean;
+  archived: boolean;
+}) {
+  const [query, setQuery] = useState("");
+  const [ownerFilter, setOwnerFilter] = useState("all");
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [dialogTodo, setDialogTodo] = useState<TodoRow | null>(null);
+  const [, startTransition] = useTransition();
+
+  const filtered = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    return todos.filter(
+      (t) =>
+        (!q || t.title.toLowerCase().includes(q)) &&
+        (ownerFilter === "all" || t.owner_id === ownerFilter),
+    );
+  }, [todos, query, ownerFilter]);
+
+  const today = new Date().toISOString().slice(0, 10);
+
+  return (
+    <div className="flex flex-col gap-4">
+      <div className="flex flex-wrap items-center gap-2">
+        {!isPrivate ? (
+          <DropdownMenu>
+            <DropdownMenuTrigger className="hover:bg-muted/50 flex items-center gap-1 rounded-full border px-3 py-1.5 text-xs">
+              <span className="text-muted-foreground">Owner:</span>
+              <span className="font-medium">
+                {ownerFilter === "all"
+                  ? "All"
+                  : (members.find((m) => m.id === ownerFilter)?.full_name ??
+                    "All")}
+              </span>
+              <ChevronDown className="size-3" />
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start">
+              <DropdownMenuItem onClick={() => setOwnerFilter("all")}>
+                All
+              </DropdownMenuItem>
+              {members.map((m) => (
+                <DropdownMenuItem
+                  key={m.id}
+                  onClick={() => setOwnerFilter(m.id)}
+                >
+                  {m.full_name}
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        ) : null}
+        <div className="relative min-w-56">
+          <Search className="text-muted-foreground absolute top-1/2 left-2.5 size-3.5 -translate-y-1/2" />
+          <Input
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Search To-Dos..."
+            className="h-8 pl-8 text-xs"
+          />
+        </div>
+        {!archived ? (
+          <Button
+            size="sm"
+            className="ml-auto gap-1 bg-[#f05100] text-white hover:bg-[#f05100]/90"
+            onClick={() => {
+              setDialogTodo(null);
+              setDialogOpen(true);
+            }}
+          >
+            <Plus className="size-3.5" /> Create To-Do
+          </Button>
+        ) : null}
+      </div>
+
+      <div className="bg-card rounded-xl border">
+        <div className="flex items-baseline gap-2 px-4 py-3">
+          <p className="text-base font-semibold">
+            {archived ? "Archived To-Dos" : isPrivate ? "Private To-Dos" : "To-Dos"}
+          </p>
+          <span className="bg-muted text-muted-foreground rounded px-1.5 py-0.5 text-xs font-medium">
+            {filtered.length}
+          </span>
+        </div>
+        {filtered.length > 0 ? (
+          <table className="w-full border-t text-sm">
+            <thead>
+              <tr className="text-muted-foreground border-b text-xs [&>th]:px-3 [&>th]:py-2 [&>th]:font-medium">
+                <th className="w-10" />
+                <th className="w-full text-left">Title</th>
+                {!isPrivate ? <th className="text-left">Owner</th> : null}
+                <th className="text-left whitespace-nowrap">Due Date</th>
+                <th className="w-8" />
+              </tr>
+            </thead>
+            <tbody>
+              {filtered.map((t) => {
+                const overdue =
+                  t.status === "open" && t.due_date && t.due_date < today;
+                return (
+                  <tr key={t.id} className="group border-b last:border-0">
+                    <td className="px-3 py-2">
+                      <Checkbox
+                        checked={t.status === "done"}
+                        onCheckedChange={(v) =>
+                          startTransition(async () => {
+                            const res = await toggleTodo(
+                              teamId,
+                              t.id,
+                              v === true,
+                            );
+                            if (!res.ok) toast.error(res.error);
+                          })
+                        }
+                      />
+                    </td>
+                    <td className="px-3 py-2">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setDialogTodo(t);
+                          setDialogOpen(true);
+                        }}
+                        className={cn(
+                          "text-left text-sm font-medium hover:text-[#f05100] hover:underline",
+                          t.status !== "open" &&
+                            "text-muted-foreground line-through",
+                        )}
+                      >
+                        {t.title}
+                      </button>
+                      {t.status === "dropped" ? (
+                        <span className="text-muted-foreground ml-2 text-[10px] uppercase">
+                          dropped to issues
+                        </span>
+                      ) : null}
+                    </td>
+                    {!isPrivate ? (
+                      <td className="px-3 py-2">
+                        <OwnerAvatar name={t.owner_name} />
+                      </td>
+                    ) : null}
+                    <td
+                      className={cn(
+                        "px-3 py-2 text-xs whitespace-nowrap",
+                        overdue
+                          ? "font-medium text-red-600 dark:text-red-400"
+                          : "text-muted-foreground",
+                      )}
+                    >
+                      {t.due_date ? df.format(new Date(t.due_date)) : "—"}
+                    </td>
+                    <td className="px-1">
+                      <DropdownMenu>
+                        <DropdownMenuTrigger
+                          render={
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="size-7 opacity-0 group-hover:opacity-100"
+                            />
+                          }
+                        >
+                          <Ellipsis className="size-3.5" />
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem
+                            onClick={() => {
+                              setDialogTodo(t);
+                              setDialogOpen(true);
+                            }}
+                          >
+                            <Pencil className="size-3.5" /> Edit
+                          </DropdownMenuItem>
+                          {t.status === "open" && !isPrivate ? (
+                            <DropdownMenuItem
+                              onClick={async () => {
+                                const res = await dropToIssue(teamId, t.id);
+                                if (res.ok)
+                                  toast.success("Moved to Issues list");
+                                else toast.error(res.error);
+                              }}
+                            >
+                              <ArrowDownToLine className="size-3.5" /> Drop to
+                              Issues
+                            </DropdownMenuItem>
+                          ) : null}
+                          <DropdownMenuItem
+                            variant="destructive"
+                            onClick={async () => {
+                              const res = await deleteTodo(teamId, t.id);
+                              if (res.ok) toast.success("To-Do deleted");
+                              else toast.error(res.error);
+                            }}
+                          >
+                            <Trash2 className="size-3.5" /> Delete
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        ) : (
+          <p className="text-muted-foreground border-t px-4 py-10 text-center text-sm">
+            {archived
+              ? "No archived To-Dos."
+              : `You have no ${isPrivate ? "Private" : "Team"} To-Dos right now.`}
+          </p>
+        )}
+      </div>
+
+      <TodoDialog
+        open={dialogOpen}
+        onOpenChange={setDialogOpen}
+        teamId={teamId}
+        members={members}
+        isPrivate={isPrivate}
+        todo={dialogTodo}
+      />
+    </div>
+  );
+}

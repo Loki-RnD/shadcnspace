@@ -1,15 +1,15 @@
 import { ShieldAlert } from "lucide-react";
 
-import { currentUser } from "@/components/l10/members";
 import { Card, CardContent } from "@/components/ui/card";
+import { getSessionUser } from "@/lib/l10/auth/session";
 import { listOrg, listUsers } from "@/lib/l10/identity";
 import { UsersTable } from "./users-table";
 
 export const dynamic = "force-dynamic";
 
 export default async function AdminPage() {
-  // Placeholder gate until session auth lands; actions re-check server-side.
-  if (currentUser.systemRole !== "super_admin") {
+  const user = await getSessionUser();
+  if (user?.systemRole !== "super_admin") {
     return (
       <Card>
         <CardContent className="text-muted-foreground flex min-h-48 flex-col items-center justify-center gap-2 text-sm">

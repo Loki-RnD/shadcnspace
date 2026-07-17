@@ -4,14 +4,11 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 import { cn } from "@/lib/utils";
-import { currentUser } from "./members";
 import { l10NavItems } from "./nav-items";
 
-export function L10Nav() {
+export function L10Nav({ isSuperAdmin }: { isSuperAdmin: boolean }) {
   const pathname = usePathname();
-  const items = l10NavItems.filter(
-    (item) => !item.adminOnly || currentUser.systemRole === "super_admin",
-  );
+  const items = l10NavItems.filter((item) => !item.adminOnly || isSuperAdmin);
 
   return (
     <div className="bg-background border-border l10-container sticky top-0 z-40 mt-2 rounded-lg border px-2 py-2">

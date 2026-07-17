@@ -3,6 +3,7 @@ import { GeistSans } from "geist/font/sans";
 
 import { cn } from "@/lib/utils";
 import { L10ThemeProvider } from "@/components/l10/theme-provider";
+import { UpdateNotifier } from "@/components/l10/update-notifier";
 
 export const metadata: Metadata = {
   title: "HOD L10 — Level 10 Meeting Platform",
@@ -22,6 +23,7 @@ export default function L10Layout({
           GeistSans.variable,
         )}
       >
+        <UpdateNotifier />
         {children}
       </div>
     </L10ThemeProvider>
