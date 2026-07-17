@@ -16,9 +16,19 @@ const ENDPOINT = "/api/l10/analytics";
 const FLUSH_INTERVAL_MS = 10_000;
 const MAX_QUEUE = 25;
 
+/** Per-browser-tab session id — the unit for bounce-rate calculations. */
+function sessionId(): string {
+  let sid = sessionStorage.getItem("l10_sid");
+  if (!sid) {
+    sid = crypto.randomUUID();
+    sessionStorage.setItem("l10_sid", sid);
+  }
+  return sid;
+}
+
 function send(events: QueuedEvent[]) {
   if (events.length === 0) return;
-  const payload = JSON.stringify({ events });
+  const payload = JSON.stringify({ events, sessionId: sessionId() });
   // sendBeacon survives page unload; fall back to keepalive fetch
   if (!(navigator.sendBeacon && navigator.sendBeacon(ENDPOINT, payload))) {
     fetch(ENDPOINT, { method: "POST", body: payload, keepalive: true }).catch(
