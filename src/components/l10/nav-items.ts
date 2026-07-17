@@ -6,6 +6,7 @@ import {
   TriangleAlert,
   Presentation,
   ShieldCheck,
+  ChartColumn,
   type LucideIcon,
 } from "lucide-react";
 
@@ -60,6 +61,13 @@ export const l10NavItems: L10NavItem[] = [
     href: "/l10/admin",
     icon: ShieldCheck,
     description: "Users, roles & access",
+    adminOnly: true,
+  },
+  {
+    title: "Analytics",
+    href: "/l10/analytics",
+    icon: ChartColumn,
+    description: "Usage, errors & feedback",
     adminOnly: true,
   },
 ];

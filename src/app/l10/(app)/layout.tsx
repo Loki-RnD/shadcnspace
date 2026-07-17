@@ -1,7 +1,10 @@
 import { redirect } from "next/navigation";
 
+import { AnalyticsTracker } from "@/components/l10/analytics-tracker";
 import { L10Header } from "@/components/l10/l10-header";
 import { L10Nav } from "@/components/l10/l10-nav";
+import { RatingPrompt } from "@/components/l10/rating-prompt";
+import { shouldPromptRating } from "@/lib/l10/analytics";
 import { getSessionUser } from "@/lib/l10/auth/session";
 
 export default async function L10AppLayout({
@@ -11,8 +14,12 @@ export default async function L10AppLayout({
   const user = await getSessionUser();
   if (!user) redirect("/l10/login");
 
+  const promptRating = await shouldPromptRating(user.id).catch(() => false);
+
   return (
     <main className="bg-background outline-border relative m-2 flex w-full flex-1 flex-col overflow-clip rounded-xl px-3 outline sm:px-6">
+      <AnalyticsTracker />
+      <RatingPrompt shouldPrompt={promptRating} />
       <L10Header user={user} />
       <L10Nav isSuperAdmin={user.systemRole === "super_admin"} />
       <div className="flex flex-1 flex-col gap-4 p-4">
