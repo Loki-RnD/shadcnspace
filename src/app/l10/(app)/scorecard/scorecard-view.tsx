@@ -63,7 +63,7 @@ import { MeasurableDialog } from "./new-measurable-dialog";
 const ORANGE = "#f05100";
 const nf = new Intl.NumberFormat("en-KE", { maximumFractionDigits: 2 });
 
-type Cell = { value: number; rag: "on" | "off" | null };
+type Cell = { value: number; rag: "on" | "off" | null; note: string | null };
 
 // Split-grid geometry, matching Ninety's ag-grid: a fixed left section for
 // the measurable columns and a separately scrolling section for the period
@@ -143,6 +143,7 @@ function EditableCell({
   onSaved: (periodStart: string, cell: Cell | null) => void;
 }) {
   const [editing, setEditing] = useState(false);
+  const [noteOpen, setNoteOpen] = useState(false);
   const [pending, startTransition] = useTransition();
 
   function commit(raw: string) {
@@ -172,8 +173,33 @@ function EditableCell({
       }
       onSaved(
         period.start,
-        parsed === null ? null : { value: parsed, rag: res.rag },
+        parsed === null
+          ? null
+          : { value: parsed, rag: res.rag, note: cell?.note ?? null },
       );
+    });
+  }
+
+  function commitNote(raw: string) {
+    setNoteOpen(false);
+    if (!cell) return;
+    const note = raw.trim() || null;
+    if (note === (cell.note ?? null)) return;
+    startTransition(async () => {
+      const res = await saveCellValue({
+        metricId: metric.id,
+        cadence,
+        periodStart: period.start,
+        periodEnd: period.end,
+        label: period.label,
+        value: cell.value,
+        note,
+      });
+      if (!res.ok) {
+        toast.error(res.error ?? "Save failed");
+        return;
+      }
+      onSaved(period.start, { ...cell, rag: res.rag, note });
     });
   }
 
@@ -194,18 +220,52 @@ function EditableCell({
   }
 
   return (
-    <button
-      type="button"
-      onClick={() => setEditing(true)}
-      className={cn(
-        "h-8 w-full min-w-20 rounded px-1 text-center text-xs tabular-nums",
-        "hover:ring-1 hover:ring-[#f05100]/40",
-        ragClass(cell?.rag),
-        pending && "opacity-50",
-      )}
-    >
-      {cell ? nf.format(cell.value) : "–"}
-    </button>
+    <div className="relative">
+      <button
+        type="button"
+        onClick={() => setEditing(true)}
+        onContextMenu={(e) => {
+          e.preventDefault();
+          if (cell) setNoteOpen(true);
+          else toast.info("Enter a value first, then right-click to comment");
+        }}
+        title={cell?.note ?? undefined}
+        className={cn(
+          "h-8 w-full min-w-20 rounded px-1 text-center text-xs tabular-nums",
+          "hover:ring-1 hover:ring-[#f05100]/40",
+          ragClass(cell?.rag),
+          pending && "opacity-50",
+        )}
+      >
+        {cell ? nf.format(cell.value) : "–"}
+        {cell?.note ? (
+          <span
+            aria-hidden
+            className="absolute top-0.5 right-0.5 size-0 border-t-[6px] border-l-[6px] border-t-[#f05100] border-l-transparent"
+          />
+        ) : null}
+      </button>
+      {noteOpen ? (
+        <div className="bg-popover absolute top-9 left-1/2 z-50 w-56 -translate-x-1/2 rounded-md border p-2 shadow-md">
+          <textarea
+            autoFocus
+            defaultValue={cell?.note ?? ""}
+            rows={3}
+            placeholder="Comment for this cell…"
+            className="bg-background w-full resize-none rounded border px-2 py-1 text-xs outline-none"
+            onBlur={(e) => commitNote(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && (e.metaKey || e.ctrlKey))
+                e.currentTarget.blur();
+              if (e.key === "Escape") setNoteOpen(false);
+            }}
+          />
+          <p className="text-muted-foreground mt-1 text-[10px]">
+            Click away to save · Esc to cancel
+          </p>
+        </div>
+      ) : null}
+    </div>
   );
 }
 

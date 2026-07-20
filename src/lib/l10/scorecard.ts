@@ -37,9 +37,14 @@ export interface MetricRow {
   goal_value: number | null;
   goal_min: number | null;
   goal_max: number | null;
+  /** quarterly revenue target; goal_value derives from it (/13.5 wk, /3 mo) */
+  quarterly_target: number | null;
   owner_name: string | null;
   /** cell values keyed by period start ISO date */
-  values: Record<string, { value: number; rag: "on" | "off" | null }>;
+  values: Record<
+    string,
+    { value: number; rag: "on" | "off" | null; note: string | null }
+  >;
 }
 
 export async function listTeamsForCompanies(
@@ -133,12 +138,12 @@ export async function getScorecard(
   const rows = (await sql`
     select
       m.id, m.seq, m.group_name, m.title, m.unit, m.goal_text,
-      m.goal_op, m.goal_value, m.goal_min, m.goal_max,
+      m.goal_op, m.goal_value, m.goal_min, m.goal_max, m.quarterly_target,
       o.full_name as owner_name,
       coalesce((
         select json_object_agg(
           w.week_start,
-          json_build_object('value', v.value, 'rag', v.rag)
+          json_build_object('value', v.value, 'rag', v.rag, 'note', v.note)
         )
         from l10.scorecard_values v
         join l10.scorecard_weeks w on w.id = v.week_id
@@ -158,10 +163,12 @@ export async function getScorecard(
     goal_value: r.goal_value === null ? null : Number(r.goal_value),
     goal_min: r.goal_min === null ? null : Number(r.goal_min),
     goal_max: r.goal_max === null ? null : Number(r.goal_max),
+    quarterly_target:
+      r.quarterly_target === null ? null : Number(r.quarterly_target),
     values: Object.fromEntries(
       Object.entries(r.values ?? {}).map(([k, v]) => [
         k,
-        { value: Number(v.value), rag: v.rag },
+        { value: Number(v.value), rag: v.rag, note: v.note ?? null },
       ]),
     ),
   }));

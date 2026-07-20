@@ -25,6 +25,8 @@ export interface SaveCellInput {
   periodEnd: string; // ISO yyyy-mm-dd
   label: string;
   value: number | null; // null clears the cell
+  /** omit = leave note untouched; '' or null clears it */
+  note?: string | null;
 }
 
 export interface SaveCellResult {
@@ -101,6 +103,14 @@ export async function saveCellValue(
             source = excluded.source, entered_by = excluded.entered_by
     `;
 
+    if (input.note !== undefined) {
+      await sql`
+        update l10.scorecard_values
+        set note = ${input.note?.trim() || null}
+        where metric_id = ${input.metricId} and week_id = ${week.id}
+      `;
+    }
+
     revalidatePath("/l10/scorecard");
     return { ok: true, rag };
   } catch (e) {
@@ -123,6 +133,55 @@ export interface CreateMetricInput {
   goalValue: number | null;
   goalMin: number | null;
   goalMax: number | null;
+  /** quarterly target; when set the goal derives from it per cadence */
+  quarterlyTarget?: number | null;
+}
+
+// Quarterly targets divide evenly: monthly = /3, weekly = monthly/4.5 (the
+// workbook's =K6/4.5 convention). quarterly_target / divisor = goal_value.
+// (duplicated in new-measurable-dialog.tsx — "use server" can't export consts)
+const QT_DIVISOR: Record<Cadence, number> = {
+  weekly: 13.5,
+  monthly: 3,
+  quarterly: 1,
+  annual: 0.25,
+};
+
+function deriveGoalFromQuarterly(cadence: Cadence, qt: number) {
+  const value = Math.round((qt / QT_DIVISOR[cadence]) * 100) / 100;
+  // goal column shows just the number — keep it uncluttered
+  const text = value.toLocaleString("en-US", { maximumFractionDigits: 0 });
+  return { value, text };
+}
+
+/** Effective goal fields: a quarterly target overrides manual >=/<= goals. */
+function resolveGoal(input: CreateMetricInput) {
+  const qt = input.quarterlyTarget ?? null;
+  if (qt !== null) {
+    const d = deriveGoalFromQuarterly(input.cadence, qt);
+    return {
+      quarterlyTarget: qt,
+      goalOp: ">=" as const,
+      goalValue: d.value,
+      goalMin: null,
+      goalMax: null,
+      goalText: d.text,
+    };
+  }
+  const goalText =
+    input.goalOp === "band"
+      ? `${input.goalMin ?? "?"}-${input.goalMax ?? "?"}`
+      : input.goalOp && input.goalValue !== null
+        ? `${input.goalOp === ">=" ? ">=" : "<="} ${input.goalValue}`
+        : null;
+  return {
+    quarterlyTarget: null,
+    goalOp: input.goalOp,
+    goalValue: input.goalValue,
+    goalMin: input.goalMin,
+    goalMax: input.goalMax,
+    goalText,
+  };
 }
 
 export async function createMetric(input: CreateMetricInput) {
@@ -131,17 +190,13 @@ export async function createMetric(input: CreateMetricInput) {
     if (!input.title.trim())
       return { ok: false as const, error: "Title is required." };
 
-    const goalText =
-      input.goalOp === "band"
-        ? `${input.goalMin ?? "?"}-${input.goalMax ?? "?"}`
-        : input.goalOp && input.goalValue !== null
-          ? `${input.goalOp === ">=" ? ">=" : "<="} ${input.goalValue}`
-          : null;
+    const g = resolveGoal(input);
 
     await sql`
       insert into l10.scorecard_metrics
         (team_id, seq, cadence, group_name, owner_id, title, unit,
-         goal_text, goal_op, goal_value, goal_min, goal_max, source)
+         goal_text, goal_op, goal_value, goal_min, goal_max,
+         quarterly_target, source)
       values (
         ${input.teamId},
         (select coalesce(max(seq), 0) + 1 from l10.scorecard_metrics
@@ -149,8 +204,8 @@ export async function createMetric(input: CreateMetricInput) {
         ${input.cadence},
         ${input.groupName?.trim() || (input.cadence === "weekly" ? "Weekly KPIs" : null)},
         ${input.ownerId}, ${input.title.trim()}, ${input.unit?.trim() || null},
-        ${goalText}, ${input.goalOp}, ${input.goalValue},
-        ${input.goalMin}, ${input.goalMax}, 'manual'
+        ${g.goalText}, ${g.goalOp}, ${g.goalValue},
+        ${g.goalMin}, ${g.goalMax}, ${g.quarterlyTarget}, 'manual'
       )
     `;
     revalidatePath("/l10/scorecard");
@@ -173,12 +228,7 @@ export async function updateMetric(input: UpdateMetricInput) {
     if (!input.title.trim())
       return { ok: false as const, error: "Title is required." };
 
-    const goalText =
-      input.goalOp === "band"
-        ? `${input.goalMin ?? "?"}-${input.goalMax ?? "?"}`
-        : input.goalOp && input.goalValue !== null
-          ? `${input.goalOp === ">=" ? ">=" : "<="} ${input.goalValue}`
-          : null;
+    const g = resolveGoal(input);
 
     const [row] = await sql`
       update l10.scorecard_metrics set
@@ -186,11 +236,12 @@ export async function updateMetric(input: UpdateMetricInput) {
         owner_id = ${input.ownerId},
         unit = ${input.unit?.trim() || null},
         group_name = ${input.groupName?.trim() || null},
-        goal_text = ${goalText},
-        goal_op = ${input.goalOp},
-        goal_value = ${input.goalValue},
-        goal_min = ${input.goalMin},
-        goal_max = ${input.goalMax}
+        goal_text = ${g.goalText},
+        goal_op = ${g.goalOp},
+        goal_value = ${g.goalValue},
+        goal_min = ${g.goalMin},
+        goal_max = ${g.goalMax},
+        quarterly_target = ${g.quarterlyTarget}
       where id = ${input.metricId} and team_id = ${input.teamId}
       returning id
     `;
@@ -199,14 +250,14 @@ export async function updateMetric(input: UpdateMetricInput) {
     // re-derive RAG for existing values against the new goal
     await sql`
       update l10.scorecard_values v set rag = case
-        when ${input.goalOp}::text = '>=' and ${input.goalValue}::numeric is not null
-          then case when v.value >= ${input.goalValue} then 'on' else 'off' end
-        when ${input.goalOp}::text = '<=' and ${input.goalValue}::numeric is not null
-          then case when v.value <= ${input.goalValue} then 'on' else 'off' end
-        when ${input.goalOp}::text = 'band'
-             and ${input.goalMin}::numeric is not null
-             and ${input.goalMax}::numeric is not null
-          then case when v.value between ${input.goalMin} and ${input.goalMax}
+        when ${g.goalOp}::text = '>=' and ${g.goalValue}::numeric is not null
+          then case when v.value >= ${g.goalValue} then 'on' else 'off' end
+        when ${g.goalOp}::text = '<=' and ${g.goalValue}::numeric is not null
+          then case when v.value <= ${g.goalValue} then 'on' else 'off' end
+        when ${g.goalOp}::text = 'band'
+             and ${g.goalMin}::numeric is not null
+             and ${g.goalMax}::numeric is not null
+          then case when v.value between ${g.goalMin} and ${g.goalMax}
                     then 'on' else 'off' end
         else null
       end

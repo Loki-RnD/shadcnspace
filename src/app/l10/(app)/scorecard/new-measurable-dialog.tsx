@@ -20,6 +20,14 @@ import { createMetric, updateMetric } from "./actions";
 
 type GoalOp = "none" | ">=" | "<=" | "band";
 
+// quarterly target → per-cadence goal (matches QT_DIVISOR in actions.ts)
+const QT_DIVISOR: Record<Cadence, number> = {
+  weekly: 13.5,
+  monthly: 3,
+  quarterly: 1,
+  annual: 0.25,
+};
+
 export function MeasurableDialog({
   open,
   onOpenChange,
@@ -45,7 +53,14 @@ export function MeasurableDialog({
   const [goalValue, setGoalValue] = useState("");
   const [goalMin, setGoalMin] = useState("");
   const [goalMax, setGoalMax] = useState("");
+  const [quarterlyTarget, setQuarterlyTarget] = useState("");
   const [pending, startTransition] = useTransition();
+
+  const qtNum = quarterlyTarget.trim() === "" ? null : Number(quarterlyTarget);
+  const derivedGoal =
+    qtNum !== null && Number.isFinite(qtNum)
+      ? Math.round((qtNum / QT_DIVISOR[cadence]) * 100) / 100
+      : null;
 
   // (re)hydrate fields whenever the dialog opens
   useEffect(() => {
@@ -61,11 +76,17 @@ export function MeasurableDialog({
     setGoalValue(metric?.goal_value?.toString() ?? "");
     setGoalMin(metric?.goal_min?.toString() ?? "");
     setGoalMax(metric?.goal_max?.toString() ?? "");
+    setQuarterlyTarget(metric?.quarterly_target?.toString() ?? "");
   }, [open, metric, members]);
 
   function submit() {
     const num = (s: string) => (s.trim() === "" ? null : Number(s));
-    if (goalOp !== "none" && goalOp !== "band" && num(goalValue) === null) {
+    if (
+      derivedGoal === null &&
+      goalOp !== "none" &&
+      goalOp !== "band" &&
+      num(goalValue) === null
+    ) {
       toast.error("Enter a goal value");
       return;
     }
@@ -81,6 +102,7 @@ export function MeasurableDialog({
         goalValue: goalOp === ">=" || goalOp === "<=" ? num(goalValue) : null,
         goalMin: goalOp === "band" ? num(goalMin) : null,
         goalMax: goalOp === "band" ? num(goalMax) : null,
+        quarterlyTarget: goalOp === ">=" ? qtNum : null,
       };
       const res = metric
         ? await updateMetric({ ...base, metricId: metric.id })
@@ -165,7 +187,8 @@ export function MeasurableDialog({
                 <Input
                   id="nm-goal-value"
                   inputMode="decimal"
-                  value={goalValue}
+                  value={derivedGoal !== null ? String(derivedGoal) : goalValue}
+                  disabled={derivedGoal !== null}
                   onChange={(e) => setGoalValue(e.target.value)}
                 />
               </div>
@@ -193,6 +216,22 @@ export function MeasurableDialog({
               </div>
             ) : null}
           </div>
+          {goalOp === ">=" ? (
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="nm-qtr-target">Quarterly target (optional)</Label>
+              <Input
+                id="nm-qtr-target"
+                inputMode="decimal"
+                value={quarterlyTarget}
+                onChange={(e) => setQuarterlyTarget(e.target.value)}
+                placeholder="e.g. 16500000"
+              />
+              <p className="text-muted-foreground text-xs">
+                Splits evenly per period — monthly ÷3, weekly ÷13.5. Overrides
+                the goal value.
+              </p>
+            </div>
+          ) : null}
         </div>
 
         <DialogFooter>
