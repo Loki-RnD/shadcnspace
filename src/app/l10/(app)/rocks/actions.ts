@@ -31,6 +31,8 @@ export interface RockInput {
   quarter: string;
   dueDate: string | null;
   isCompany: boolean;
+  description?: string | null;
+  status?: "on_track" | "off_track" | "done";
 }
 
 export async function createRock(input: RockInput) {
@@ -39,9 +41,10 @@ export async function createRock(input: RockInput) {
     if (!input.title.trim())
       return { ok: false as const, error: "Title is required." };
     await sql`
-      insert into l10.rocks (team_id, owner_id, quarter, title, due_date, is_company)
+      insert into l10.rocks (team_id, owner_id, quarter, title, due_date, is_company, description, status)
       values (${input.teamId}, ${input.ownerId}, ${input.quarter},
-              ${input.title.trim()}, ${input.dueDate}, ${input.isCompany})
+              ${input.title.trim()}, ${input.dueDate}, ${input.isCompany},
+              ${input.description?.trim() || null}, ${input.status ?? "on_track"})
     `;
     revalidatePath("/l10/rocks");
     return { ok: true as const };

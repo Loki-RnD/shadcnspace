@@ -30,6 +30,7 @@ export interface IssueInput {
   description: string | null;
   ownerId: string | null;
   term: "short" | "long";
+  priority?: number | null;
 }
 
 export async function createIssue(input: IssueInput) {
@@ -42,10 +43,10 @@ export async function createIssue(input: IssueInput) {
       where team_id = ${input.teamId} and core_user_id = ${user.id}
     `;
     await sql`
-      insert into l10.issues (team_id, raised_by, owner_id, title, description, term)
+      insert into l10.issues (team_id, raised_by, owner_id, title, description, term, priority)
       values (${input.teamId}, ${me?.id ?? null}, ${input.ownerId},
               ${input.title.trim()}, ${input.description?.trim() || null},
-              ${input.term})
+              ${input.term}, ${input.priority ?? null})
     `;
     revalidatePath("/l10/issues");
     return { ok: true as const };

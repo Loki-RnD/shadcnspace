@@ -21,8 +21,18 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
+import { UniversalCreate } from "@/components/l10/universal-create/universal-create";
+import type { MemberRow, TeamRow } from "@/lib/l10/scorecard";
 
-export function L10Header({ user }: { user: SessionUser }) {
+export function L10Header({
+  user,
+  teams = [],
+  members = [],
+}: {
+  user: SessionUser;
+  teams?: TeamRow[];
+  members?: MemberRow[];
+}) {
   const { initials, color } = memberVisuals(user.email, user.name);
 
   return (
@@ -72,6 +82,16 @@ export function L10Header({ user }: { user: SessionUser }) {
             <Bell className="size-5" />
             <span className="bg-destructive absolute top-1.5 right-1.5 size-2 rounded-full" />
           </Button>
+
+          {teams.length > 0 ? (
+            <div className="mx-1 sm:mx-2">
+              <UniversalCreate
+                user={user}
+                teams={teams}
+                initialMembers={members}
+              />
+            </div>
+          ) : null}
 
           <DropdownMenu>
             {/* Plain trigger: nesting the Base UI Button primitive via

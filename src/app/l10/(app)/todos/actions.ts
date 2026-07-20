@@ -30,6 +30,7 @@ export interface TodoInput {
   ownerId: string | null;
   dueDate: string | null;
   isPrivate: boolean;
+  description?: string | null;
 }
 
 export async function createTodo(input: TodoInput) {
@@ -54,9 +55,10 @@ export async function createTodo(input: TodoInput) {
     }
 
     await sql`
-      insert into l10.todos (team_id, owner_id, title, due_date, is_private, source)
+      insert into l10.todos (team_id, owner_id, title, due_date, is_private, source, description)
       values (${input.teamId}, ${ownerId}, ${input.title.trim()},
-              ${input.dueDate}, ${input.isPrivate}, 'portal')
+              ${input.dueDate}, ${input.isPrivate}, 'portal',
+              ${input.description?.trim() || null})
     `;
     revalidatePath("/l10/todos");
     return { ok: true as const };
