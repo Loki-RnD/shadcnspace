@@ -65,35 +65,43 @@ const nf = new Intl.NumberFormat("en-KE", { maximumFractionDigits: 2 });
 
 type Cell = { value: number; rag: "on" | "off" | null };
 
-// Frozen (sticky) column geometry — px widths and cumulative left offsets.
-// On phones only trend + title stay frozen; anything wider than ~200px of
-// sticky columns leaves no room to reach the period cells.
-type ColGeom = { w: number; left: number };
+// Split-grid geometry, matching Ninety's ag-grid: a fixed left section for
+// the measurable columns and a separately scrolling section for the period
+// cells. Widths mirror the live grid (65+50+220+50+130+115+115 = 745px).
+// On phones only trend + title stay fixed; anything wider leaves no room to
+// reach the period cells.
 type ColsMap = Record<
-  "check" | "trend" | "title" | "goal" | "avg" | "total",
-  ColGeom | null
+  "check" | "trend" | "title" | "owner" | "goal" | "avg" | "total",
+  number | null
 >;
 
 const COLS_DESKTOP: ColsMap = {
-  check: { w: 36, left: 0 },
-  trend: { w: 48, left: 36 },
-  title: { w: 288, left: 84 },
-  goal: { w: 96, left: 372 },
-  avg: { w: 80, left: 468 },
-  total: { w: 80, left: 548 },
+  check: 65,
+  trend: 50,
+  title: 220,
+  owner: 50,
+  goal: 130,
+  avg: 115,
+  total: 115,
 };
 
 const COLS_MOBILE: ColsMap = {
   check: null,
-  trend: { w: 40, left: 0 },
-  title: { w: 148, left: 40 },
+  trend: 40,
+  title: 148,
+  owner: null,
   goal: null,
   avg: null,
   total: null,
 };
 
+const PERIOD_W = 105; // ag-grid score column width
+const ACTIONS_W = 40; // trailing row-menu column (ours; Ninety has none)
+const HEADER_H = 75; // 30px year band + 45px column labels
+const ROW_H = 42; // --ag-line-height
+
 function fixedWidth(cols: ColsMap) {
-  return Object.values(cols).reduce((sum, c) => sum + (c?.w ?? 0), 0);
+  return Object.values(cols).reduce<number>((sum, w) => sum + (w ?? 0), 0);
 }
 
 const AVATAR_TINTS = [
@@ -119,16 +127,6 @@ function ragClass(rag: "on" | "off" | null | undefined) {
     return "bg-emerald-500/15 text-emerald-700 dark:text-emerald-400";
   if (rag === "off") return "bg-red-500/15 text-red-700 dark:text-red-400";
   return "";
-}
-
-function stickyCell(geom: ColGeom, extra?: string) {
-  return {
-    className: cn(
-      "sticky z-10 bg-card group-hover:bg-muted/60 transition-colors",
-      extra,
-    ),
-    style: { left: geom.left, minWidth: geom.w, width: geom.w },
-  };
 }
 
 function EditableCell({
@@ -301,17 +299,34 @@ function GroupTable({
   setOverride: (metricId: string, start: string, cell: Cell | null) => void;
   onEdit: (metric: MetricRow) => void;
 }) {
-  const scrollRef = useRef<HTMLDivElement>(null);
+  const headerRef = useRef<HTMLDivElement>(null);
+  const bodyRef = useRef<HTMLDivElement>(null);
+  const fakeRef = useRef<HTMLDivElement>(null);
+  const vScrollRef = useRef<HTMLDivElement>(null);
+  const [sbW, setSbW] = useState(0);
+  const [hovered, setHovered] = useState<string | null>(null);
   const currentStart = periods[periods.length - 1]?.start;
   const isMobile = useIsMobile();
   const cols = isMobile ? COLS_MOBILE : COLS_DESKTOP;
-  const fixedCount = Object.values(cols).filter(Boolean).length;
+  const fixedW = fixedWidth(cols);
+  const rightW = periods.length * PERIOD_W + ACTIONS_W;
+
+  // one horizontal position shared by the header viewport, the body viewport
+  // and the bottom scrollbar strip (ag-grid's fake horizontal scroll)
+  function syncScroll(left: number) {
+    for (const el of [headerRef.current, bodyRef.current, fakeRef.current]) {
+      if (el && el.scrollLeft !== left) el.scrollLeft = left;
+    }
+  }
 
   // land on the newest periods (right end) — Ninety behaviour
   useEffect(() => {
-    const el = scrollRef.current;
-    if (el) el.scrollLeft = el.scrollWidth;
-  }, [periods]);
+    syncScroll(rightW);
+    // the vertical scrollbar steals width from the body pane only; pad the
+    // header and scroll strip so the period columns stay aligned
+    const v = vScrollRef.current;
+    setSbW(v ? v.offsetWidth - v.clientWidth : 0);
+  }, [periods, rightW, rows.length]);
 
   const yearSpans = useMemo(() => {
     const spans: { year: number; span: number }[] = [];
@@ -339,290 +354,346 @@ function GroupTable({
     ];
 
   return (
-    <div
-      ref={scrollRef}
-      className="max-h-[520px] overflow-x-auto overflow-y-auto border-t"
-    >
-      <table className="w-full min-w-max border-collapse text-sm">
-        <thead>
-          <tr className="text-muted-foreground text-xs">
-            <th
-              colSpan={fixedCount}
-              className="bg-card sticky top-0 left-0 z-40 p-0"
-              style={{ minWidth: fixedWidth(cols) }}
-            />
-            {yearSpans.map((y) => (
-              <th
-                key={y.year}
-                colSpan={y.span}
-                className="bg-card sticky top-0 z-20 border-b px-2 py-1 text-left font-medium"
-              >
-                {y.year}
-              </th>
-            ))}
-            <th className="bg-card sticky top-0 z-20 border-b p-0" />
-          </tr>
-          <tr className="text-muted-foreground text-xs [&>th]:px-2 [&>th]:py-2 [&>th]:font-medium">
-            {cols.check ? (
-              <th
-                className="bg-card sticky z-30 border-b"
-                style={{
-                  top: 25,
-                  left: cols.check.left,
-                  minWidth: cols.check.w,
-                }}
-              >
-                <Checkbox
-                  checked={rows.length > 0 && rows.every((r) => checked[r.id])}
-                  onCheckedChange={(v) =>
-                    setChecked(
-                      Object.fromEntries(rows.map((r) => [r.id, v === true])),
-                    )
-                  }
-                />
-              </th>
-            ) : null}
-            {cols.trend ? (
-              <th
-                className="bg-card sticky z-30 border-b text-center"
-                style={{
-                  top: 25,
-                  left: cols.trend.left,
-                  minWidth: cols.trend.w,
-                }}
-              >
-                {isMobile ? (
-                  <LineChartIcon className="mx-auto size-3.5" />
-                ) : (
-                  <>
-                    View
-                    <br />
-                    Trend
-                  </>
-                )}
-              </th>
-            ) : null}
-            {cols.title ? (
-              <th
-                className="bg-card sticky z-30 border-b text-left"
-                style={{
-                  top: 25,
-                  left: cols.title.left,
-                  minWidth: cols.title.w,
-                }}
-              >
-                Title
-              </th>
-            ) : null}
-            {cols.goal ? (
-              <th
-                className="bg-card sticky z-30 border-b text-right"
-                style={{ top: 25, left: cols.goal.left, minWidth: cols.goal.w }}
-              >
-                Goal
-              </th>
-            ) : null}
-            {cols.avg ? (
-              <th
-                className="bg-card sticky z-30 border-b text-right"
-                style={{ top: 25, left: cols.avg.left, minWidth: cols.avg.w }}
-              >
-                Average
-              </th>
-            ) : null}
-            {cols.total ? (
-              <th
-                className="bg-card sticky z-30 border-b text-right"
-                style={{
-                  top: 25,
-                  left: cols.total.left,
-                  minWidth: cols.total.w,
-                }}
-              >
-                Total
-              </th>
-            ) : null}
-            {periods.map((p) => {
-              const [a, b] = p.label.split(" - ");
-              return (
-                <th
-                  key={p.start}
-                  className={cn(
-                    "bg-card sticky z-20 min-w-24 border-b text-center whitespace-nowrap",
-                    p.start === currentStart &&
-                      "border-l-2 border-l-[#f05100]/70",
-                  )}
-                  style={{ top: 25 }}
+    <div className="border-t">
+      {/* header — fixed measurable columns, then the period viewport */}
+      <div
+        className="text-muted-foreground flex border-b text-xs font-medium"
+        style={{ paddingRight: sbW }}
+      >
+        <div
+          className="flex shrink-0"
+          style={{ width: fixedW, height: HEADER_H }}
+        >
+          {cols.check ? (
+            <div
+              className="flex items-center justify-center"
+              style={{ width: cols.check }}
+            >
+              <Checkbox
+                checked={rows.length > 0 && rows.every((r) => checked[r.id])}
+                onCheckedChange={(v) =>
+                  setChecked(
+                    Object.fromEntries(rows.map((r) => [r.id, v === true])),
+                  )
+                }
+              />
+            </div>
+          ) : null}
+          {cols.trend ? (
+            <div
+              className="flex items-center justify-center text-center"
+              style={{ width: cols.trend }}
+            >
+              {isMobile ? (
+                <LineChartIcon className="size-3.5" />
+              ) : (
+                <>
+                  View
+                  <br />
+                  Trend
+                </>
+              )}
+            </div>
+          ) : null}
+          <div className="flex items-center px-2" style={{ width: cols.title! }}>
+            Title
+          </div>
+          {cols.owner ? (
+            <div
+              className="flex items-center justify-center"
+              style={{ width: cols.owner }}
+            >
+              Owner
+            </div>
+          ) : null}
+          {cols.goal ? (
+            <div
+              className="flex items-center px-2"
+              style={{ width: cols.goal }}
+            >
+              Goal
+            </div>
+          ) : null}
+          {cols.avg ? (
+            <div
+              className="flex items-center justify-end px-2"
+              style={{ width: cols.avg }}
+            >
+              Average
+            </div>
+          ) : null}
+          {cols.total ? (
+            <div
+              className="flex items-center justify-end px-2"
+              style={{ width: cols.total }}
+            >
+              Total
+            </div>
+          ) : null}
+        </div>
+        <div ref={headerRef} className="min-w-0 flex-1 overflow-hidden">
+          <div style={{ width: rightW }}>
+            <div className="flex h-[30px] items-end pb-1">
+              {yearSpans.map((y) => (
+                <div
+                  key={y.year}
+                  className="shrink-0 px-2"
+                  style={{ width: y.span * PERIOD_W }}
                 >
-                  {b ? (
-                    <>
-                      {a} -<br />
-                      {b}
-                    </>
-                  ) : (
-                    a
-                  )}
-                </th>
-              );
-            })}
-            <th className="bg-card sticky z-20 w-8 border-b" style={{ top: 25 }} />
-          </tr>
-        </thead>
-        <tbody>
-          {rows.map((m) => {
-            const cells = cellsFor(m);
-            const vals = Object.values(cells).map((c) => c.value);
-            const avg = vals.length
-              ? vals.reduce((a, b) => a + b, 0) / vals.length
-              : null;
-            const total = vals.length
-              ? vals.reduce((a, b) => a + b, 0)
-              : null;
-            return (
-              <tr key={m.id} className="group border-b last:border-0">
-                {cols.check ? (
-                  <td {...stickyCell(cols.check, "px-2")}>
-                    <Checkbox
-                      checked={checked[m.id] ?? false}
-                      onCheckedChange={(v) =>
-                        setChecked({ [m.id]: v === true })
-                      }
-                    />
-                  </td>
-                ) : null}
-                {cols.trend ? (
-                  <td {...stickyCell(cols.trend, "px-2 text-center")}>
-                    <TrendPopover metric={m} periods={periods} cells={cells} />
-                  </td>
-                ) : null}
-                <td {...stickyCell(cols.title!, "px-2 py-1.5")}>
-                  <div className="flex items-center gap-2">
-                    {m.owner_name ? (
-                      <Tooltip>
-                        <TooltipTrigger
-                          render={
-                            <span
-                              className={cn(
-                                "flex size-6 shrink-0 items-center justify-center rounded-full text-[10px] font-semibold",
-                                ownerTint(m.owner_name),
-                              )}
-                            />
-                          }
-                        >
-                          {initials(m.owner_name)}
-                        </TooltipTrigger>
-                        <TooltipContent>{m.owner_name}</TooltipContent>
-                      </Tooltip>
-                    ) : (
-                      <span className="bg-muted text-muted-foreground flex size-6 shrink-0 items-center justify-center rounded-full text-[10px]">
-                        —
-                      </span>
-                    )}
-                    <button
-                      type="button"
-                      onClick={() => onEdit(m)}
-                      className="truncate text-left text-xs font-medium hover:text-[#f05100] hover:underline"
-                      title="Edit measurable"
-                    >
-                      {m.title}
-                      {m.unit ? (
-                        <span className="text-muted-foreground ml-1 font-normal">
-                          ({m.unit})
-                        </span>
-                      ) : null}
-                    </button>
-                  </div>
-                </td>
-                {cols.goal ? (
-                  <td
-                    {...stickyCell(
-                      cols.goal,
-                      "px-2 text-right text-xs whitespace-nowrap",
-                    )}
-                  >
-                    {m.goal_text ?? "—"}
-                  </td>
-                ) : null}
-                {cols.avg ? (
-                  <td
-                    {...stickyCell(
-                      cols.avg,
-                      "px-2 text-right text-xs tabular-nums",
-                    )}
-                  >
-                    {avg === null ? "—" : nf.format(avg)}
-                  </td>
-                ) : null}
-                {cols.total ? (
-                  <td
-                    {...stickyCell(
-                      cols.total,
-                      "px-2 text-right text-xs tabular-nums",
-                    )}
-                  >
-                    {total === null ? "—" : nf.format(total)}
-                  </td>
-                ) : null}
-                {periods.map((p) => (
-                  <td
+                  {y.year}
+                </div>
+              ))}
+            </div>
+            <div className="flex h-[45px]">
+              {periods.map((p) => {
+                const [a, b] = p.label.split(" - ");
+                return (
+                  <div
                     key={p.start}
                     className={cn(
-                      "p-1",
+                      "flex shrink-0 items-center justify-center text-center whitespace-nowrap",
                       p.start === currentStart &&
                         "border-l-2 border-l-[#f05100]/70",
                     )}
+                    style={{ width: PERIOD_W }}
                   >
-                    <EditableCell
-                      metric={m}
-                      period={p}
-                      cadence={cadence}
-                      cell={cells[p.start]}
-                      onSaved={(start, cell) => setOverride(m.id, start, cell)}
-                    />
-                  </td>
-                ))}
-                <td className="px-1">
-                  <DropdownMenu>
-                    <DropdownMenuTrigger
-                          className={cn(
-                            buttonVariants({ variant: "ghost", size: "icon" }),
-                            "size-7 sm:opacity-0 sm:group-hover:opacity-100",
-                          )}
-                        >
-                      <Ellipsis className="size-3.5" />
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuItem onClick={() => onEdit(m)}>
-                        <Pencil className="size-3.5" /> Edit
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        variant="destructive"
-                        onClick={async () => {
-                          const res = await archiveMetric(m.id);
-                          if (res.ok) toast.success("Measurable archived");
-                          else toast.error(res.error);
-                        }}
+                    {b ? (
+                      <span>
+                        {a} -<br />
+                        {b}
+                      </span>
+                    ) : (
+                      a
+                    )}
+                  </div>
+                );
+              })}
+              <div className="shrink-0" style={{ width: ACTIONS_W }} />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* body — vertical scroll wraps both panes; horizontal scroll lives
+          only in the period pane (its native scrollbar is hidden and driven
+          by the strip below, like ag-grid's fake horizontal scroll) */}
+      {rows.length === 0 ? (
+        <div className="text-muted-foreground flex h-24 items-center justify-center text-xs">
+          No data to show
+        </div>
+      ) : (
+        <div ref={vScrollRef} className="max-h-[520px] overflow-y-auto">
+          <div className="flex items-start">
+            <div className="shrink-0" style={{ width: fixedW }}>
+              {rows.map((m) => {
+                const cells = cellsFor(m);
+                const vals = Object.values(cells).map((c) => c.value);
+                const avg = vals.length
+                  ? vals.reduce((a, b) => a + b, 0) / vals.length
+                  : null;
+                const total = vals.length
+                  ? vals.reduce((a, b) => a + b, 0)
+                  : null;
+                return (
+                  <div
+                    key={m.id}
+                    onMouseEnter={() => setHovered(m.id)}
+                    onMouseLeave={() => setHovered(null)}
+                    className={cn(
+                      "flex items-center border-b transition-colors",
+                      hovered === m.id && "bg-muted/60",
+                    )}
+                    style={{ height: ROW_H }}
+                  >
+                    {cols.check ? (
+                      <div
+                        className="flex justify-center"
+                        style={{ width: cols.check }}
                       >
-                        Archive
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </td>
-              </tr>
-            );
-          })}
-          {rows.length === 0 ? (
-            <tr>
-              <td
-                colSpan={fixedCount + 1 + periods.length}
-                className="text-muted-foreground h-24 text-center text-xs"
-              >
-                No data to show
-              </td>
-            </tr>
-          ) : null}
-        </tbody>
-      </table>
+                        <Checkbox
+                          checked={checked[m.id] ?? false}
+                          onCheckedChange={(v) =>
+                            setChecked({ [m.id]: v === true })
+                          }
+                        />
+                      </div>
+                    ) : null}
+                    {cols.trend ? (
+                      <div
+                        className="flex justify-center"
+                        style={{ width: cols.trend }}
+                      >
+                        <TrendPopover
+                          metric={m}
+                          periods={periods}
+                          cells={cells}
+                        />
+                      </div>
+                    ) : null}
+                    <div className="min-w-0 px-2" style={{ width: cols.title! }}>
+                      <button
+                        type="button"
+                        onClick={() => onEdit(m)}
+                        className="block w-full truncate text-left text-xs font-medium hover:text-[#f05100] hover:underline"
+                        title="Edit measurable"
+                      >
+                        {m.title}
+                        {m.unit ? (
+                          <span className="text-muted-foreground ml-1 font-normal">
+                            ({m.unit})
+                          </span>
+                        ) : null}
+                      </button>
+                    </div>
+                    {cols.owner ? (
+                      <div
+                        className="flex justify-center"
+                        style={{ width: cols.owner }}
+                      >
+                        {m.owner_name ? (
+                          <Tooltip>
+                            <TooltipTrigger
+                              render={
+                                <span
+                                  className={cn(
+                                    "flex size-6 shrink-0 items-center justify-center rounded-full text-[10px] font-semibold",
+                                    ownerTint(m.owner_name),
+                                  )}
+                                />
+                              }
+                            >
+                              {initials(m.owner_name)}
+                            </TooltipTrigger>
+                            <TooltipContent>{m.owner_name}</TooltipContent>
+                          </Tooltip>
+                        ) : (
+                          <span className="bg-muted text-muted-foreground flex size-6 shrink-0 items-center justify-center rounded-full text-[10px]">
+                            —
+                          </span>
+                        )}
+                      </div>
+                    ) : null}
+                    {cols.goal ? (
+                      <div
+                        className="truncate px-2 text-xs whitespace-nowrap"
+                        style={{ width: cols.goal }}
+                      >
+                        {m.goal_text ?? "—"}
+                      </div>
+                    ) : null}
+                    {cols.avg ? (
+                      <div
+                        className="px-2 text-right text-xs tabular-nums"
+                        style={{ width: cols.avg }}
+                      >
+                        {avg === null ? "—" : nf.format(avg)}
+                      </div>
+                    ) : null}
+                    {cols.total ? (
+                      <div
+                        className="px-2 text-right text-xs tabular-nums"
+                        style={{ width: cols.total }}
+                      >
+                        {total === null ? "—" : nf.format(total)}
+                      </div>
+                    ) : null}
+                  </div>
+                );
+              })}
+            </div>
+            <div
+              ref={bodyRef}
+              onScroll={(e) => syncScroll(e.currentTarget.scrollLeft)}
+              className="min-w-0 flex-1 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+            >
+              <div style={{ width: rightW }}>
+                {rows.map((m) => {
+                  const cells = cellsFor(m);
+                  return (
+                    <div
+                      key={m.id}
+                      onMouseEnter={() => setHovered(m.id)}
+                      onMouseLeave={() => setHovered(null)}
+                      className={cn(
+                        "flex items-center border-b transition-colors",
+                        hovered === m.id && "bg-muted/60",
+                      )}
+                      style={{ height: ROW_H }}
+                    >
+                      {periods.map((p) => (
+                        <div
+                          key={p.start}
+                          className={cn(
+                            "shrink-0 p-1",
+                            p.start === currentStart &&
+                              "border-l-2 border-l-[#f05100]/70",
+                          )}
+                          style={{ width: PERIOD_W }}
+                        >
+                          <EditableCell
+                            metric={m}
+                            period={p}
+                            cadence={cadence}
+                            cell={cells[p.start]}
+                            onSaved={(start, cell) =>
+                              setOverride(m.id, start, cell)
+                            }
+                          />
+                        </div>
+                      ))}
+                      <div
+                        className="flex shrink-0 justify-center"
+                        style={{ width: ACTIONS_W }}
+                      >
+                        <DropdownMenu>
+                          <DropdownMenuTrigger
+                            className={cn(
+                              buttonVariants({ variant: "ghost", size: "icon" }),
+                              "size-7 sm:opacity-0",
+                              hovered === m.id && "sm:opacity-100",
+                            )}
+                          >
+                            <Ellipsis className="size-3.5" />
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem onClick={() => onEdit(m)}>
+                              <Pencil className="size-3.5" /> Edit
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              variant="destructive"
+                              onClick={async () => {
+                                const res = await archiveMetric(m.id);
+                                if (res.ok)
+                                  toast.success("Measurable archived");
+                                else toast.error(res.error);
+                              }}
+                            >
+                              Archive
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* bottom horizontal scrollbar — left spacer under the fixed columns,
+          track only under the period section (ag-body-horizontal-scroll) */}
+      <div className="flex" style={{ paddingRight: sbW }}>
+        <div className="shrink-0" style={{ width: fixedW }} />
+        <div
+          ref={fakeRef}
+          onScroll={(e) => syncScroll(e.currentTarget.scrollLeft)}
+          className="h-[15px] min-w-0 flex-1 overflow-x-scroll overflow-y-hidden"
+        >
+          <div style={{ width: rightW, height: 1 }} />
+        </div>
+      </div>
     </div>
   );
 }
