@@ -11,6 +11,7 @@ import {
 import { toast } from "sonner";
 import {
   ChevronDown,
+  CirclePlus,
   Ellipsis,
   LineChart as LineChartIcon,
   Pencil,
@@ -57,8 +58,21 @@ import type {
   MetricRow,
   PeriodWindow,
 } from "@/lib/l10/scorecard";
-import { archiveMetric, saveCellValue } from "./actions";
+import {
+  archiveMetric,
+  listArchivedMetrics,
+  restoreMetric,
+  saveCellValue,
+  type ArchivedMetric,
+} from "./actions";
 import { MeasurableDialog } from "./new-measurable-dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 const ORANGE = "#f05100";
 const nf = new Intl.NumberFormat("en-KE", { maximumFractionDigits: 2 });
@@ -781,6 +795,7 @@ export function ScorecardView({
   const [dialogGroup, setDialogGroup] = useState<string | null>(null);
   const [dialogMetric, setDialogMetric] = useState<MetricRow | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [addExistingOpen, setAddExistingOpen] = useState(false);
 
   const groups = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -888,18 +903,33 @@ export function ScorecardView({
                 </span>
               </div>
               <div className="flex items-center gap-1">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="gap-1 border-[#f05100]/40 text-[#f05100] hover:bg-[#f05100]/5 hover:text-[#f05100]"
-                  onClick={() => {
-                    setDialogGroup(groupName);
-                    setDialogMetric(null);
-                    setDialogOpen(true);
-                  }}
-                >
-                  New Measurable <ChevronDown className="size-3" />
-                </Button>
+                {/* Ninety's kpi-action-menu: Create new / Add existing */}
+                <DropdownMenu>
+                  <DropdownMenuTrigger
+                    className={cn(
+                      buttonVariants({ variant: "outline", size: "sm" }),
+                      "gap-1 border-[#f05100]/40 text-[#f05100] hover:bg-[#f05100]/5 hover:text-[#f05100]",
+                    )}
+                  >
+                    New Measurable <ChevronDown className="size-3" />
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem
+                      onClick={() => {
+                        setDialogGroup(groupName);
+                        setDialogMetric(null);
+                        setDialogOpen(true);
+                      }}
+                    >
+                      <CirclePlus className="size-5" strokeWidth={1.75} />
+                      Create new Measurable
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setAddExistingOpen(true)}>
+                      <CirclePlus className="size-5" strokeWidth={1.75} />
+                      Add existing Measurable
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
                 <Button variant="ghost" size="icon" className="size-7" disabled>
                   <Ellipsis className="size-3.5" />
                 </Button>
@@ -964,6 +994,105 @@ export function ScorecardView({
         defaultGroup={dialogGroup}
         metric={dialogMetric}
       />
+      <AddExistingDialog
+        open={addExistingOpen}
+        onOpenChange={setAddExistingOpen}
+        teamId={teamId}
+        cadence={cadence}
+      />
     </div>
+  );
+}
+
+/** "Add existing Measurable" — restore an archived measurable to the
+ *  scorecard (the pool Ninety draws from when re-adding). */
+function AddExistingDialog({
+  open,
+  onOpenChange,
+  teamId,
+  cadence,
+}: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  teamId: string;
+  cadence: Cadence;
+}) {
+  const [items, setItems] = useState<ArchivedMetric[] | null>(null);
+  const [pending, startTransition] = useTransition();
+
+  useEffect(() => {
+    if (!open) return;
+    setItems(null);
+    listArchivedMetrics(teamId, cadence)
+      .then(setItems)
+      .catch(() => setItems([]));
+  }, [open, teamId, cadence]);
+
+  function add(m: ArchivedMetric) {
+    startTransition(async () => {
+      const res = await restoreMetric(m.id);
+      if (!res.ok) {
+        toast.error(res.error);
+        return;
+      }
+      toast.success(`“${m.title}” added to the scorecard`);
+      setItems((list) => list?.filter((i) => i.id !== m.id) ?? null);
+    });
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>Add existing Measurable</DialogTitle>
+          <DialogDescription>
+            Restore an archived measurable to this scorecard.
+          </DialogDescription>
+        </DialogHeader>
+        {items === null ? (
+          <p className="text-muted-foreground py-6 text-center text-sm">
+            Loading…
+          </p>
+        ) : items.length === 0 ? (
+          <p className="text-muted-foreground py-6 text-center text-sm">
+            No archived measurables for this scorecard.
+          </p>
+        ) : (
+          <div className="max-h-72 overflow-y-auto">
+            {items.map((m) => (
+              <div
+                key={m.id}
+                className="flex items-center justify-between gap-2 border-b py-2 text-sm last:border-0"
+              >
+                <div className="min-w-0">
+                  <p className="truncate font-medium">
+                    {m.title}
+                    {m.unit ? (
+                      <span className="text-muted-foreground ml-1 font-normal">
+                        ({m.unit})
+                      </span>
+                    ) : null}
+                  </p>
+                  {m.group_name ? (
+                    <p className="text-muted-foreground text-xs">
+                      {m.group_name}
+                    </p>
+                  ) : null}
+                </div>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  disabled={pending}
+                  className="gap-1 border-[#f05100]/40 text-[#f05100] hover:bg-[#f05100]/5 hover:text-[#f05100]"
+                  onClick={() => add(m)}
+                >
+                  <CirclePlus className="size-4" strokeWidth={1.75} /> Add
+                </Button>
+              </div>
+            ))}
+          </div>
+        )}
+      </DialogContent>
+    </Dialog>
   );
 }

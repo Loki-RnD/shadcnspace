@@ -274,6 +274,51 @@ export async function updateMetric(input: UpdateMetricInput) {
   }
 }
 
+export interface ArchivedMetric {
+  id: string;
+  title: string;
+  unit: string | null;
+  group_name: string | null;
+}
+
+/** Archived (inactive) measurables for the team/cadence — the pool behind
+ *  Ninety's "Add existing Measurable" menu item. */
+export async function listArchivedMetrics(
+  teamId: string,
+  cadence: Cadence,
+): Promise<ArchivedMetric[]> {
+  await assertTeamAccess(teamId);
+  const rows = await sql`
+    select id, title, unit, group_name from l10.scorecard_metrics
+    where team_id = ${teamId} and cadence = ${cadence} and not active
+    order by title
+  `;
+  return rows as ArchivedMetric[];
+}
+
+export async function restoreMetric(metricId: string) {
+  const user = await getSessionUser();
+  if (!user) return { ok: false as const, error: "Not signed in" };
+  try {
+    const [row] = await sql`
+      update l10.scorecard_metrics m set active = true
+      from l10.teams t
+      join core.businesses b on b.id = t.business_id
+      where m.id = ${metricId} and m.team_id = t.id
+        and b.short_name = any(${user.companies})
+      returning m.id
+    `;
+    if (!row) return { ok: false as const, error: "Metric not found" };
+    revalidatePath("/l10/scorecard");
+    return { ok: true as const };
+  } catch (e) {
+    return {
+      ok: false as const,
+      error: e instanceof Error ? e.message : "Restore failed",
+    };
+  }
+}
+
 export async function archiveMetric(metricId: string) {
   const user = await getSessionUser();
   if (!user) return { ok: false as const, error: "Not signed in" };
