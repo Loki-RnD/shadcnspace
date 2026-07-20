@@ -605,19 +605,44 @@ function GroupTable({
                       </div>
                     ) : null}
                     <div className="min-w-0 px-2" style={{ width: cols.title! }}>
-                      <button
-                        type="button"
-                        onClick={() => onEdit(m)}
-                        className="block w-full truncate text-left text-xs font-medium hover:text-[#f05100] hover:underline"
-                        title="Edit measurable"
-                      >
-                        {m.title}
-                        {m.unit ? (
-                          <span className="text-muted-foreground ml-1 font-normal">
-                            ({m.unit})
-                          </span>
+                      <div className="flex items-center gap-1.5">
+                        {/* Owner column is hidden on phones — surface the
+                            avatar inline so ownership stays visible. */}
+                        {isMobile ? (
+                          m.owner_name ? (
+                            <span
+                              className={cn(
+                                "flex size-5 shrink-0 items-center justify-center rounded-full text-[9px] font-semibold",
+                                ownerTint(m.owner_name),
+                              )}
+                            >
+                              {initials(m.owner_name)}
+                            </span>
+                          ) : (
+                            <span className="bg-muted text-muted-foreground flex size-5 shrink-0 items-center justify-center rounded-full text-[9px]">
+                              —
+                            </span>
+                          )
                         ) : null}
-                      </button>
+                        <button
+                          type="button"
+                          onClick={() => onEdit(m)}
+                          className={cn(
+                            "min-w-0 flex-1 text-left text-xs font-medium hover:text-[#f05100] hover:underline",
+                            isMobile
+                              ? "line-clamp-2 leading-snug break-words"
+                              : "truncate",
+                          )}
+                          title="Edit measurable"
+                        >
+                          {m.title}
+                          {m.unit ? (
+                            <span className="text-muted-foreground ml-1 font-normal">
+                              ({m.unit})
+                            </span>
+                          ) : null}
+                        </button>
+                      </div>
                     </div>
                     {cols.owner ? (
                       <div
