@@ -101,8 +101,8 @@ const COLS_DESKTOP: ColsMap = {
 
 const COLS_MOBILE: ColsMap = {
   check: null,
-  trend: 40,
-  title: 148,
+  trend: 36,
+  title: 156,
   owner: null,
   goal: null,
   avg: null,
@@ -383,7 +383,11 @@ function GroupTable({
   const isMobile = useIsMobile();
   const cols = isMobile ? COLS_MOBILE : COLS_DESKTOP;
   const fixedW = fixedWidth(cols);
-  const rightW = periods.length * PERIOD_W + ACTIONS_W;
+  // Narrower score columns and no trailing row-menu on phones — the
+  // frozen pane leaves ~200px, which fits two 96px periods cleanly.
+  const periodW = isMobile ? 96 : PERIOD_W;
+  const actionsW = isMobile ? 0 : ACTIONS_W;
+  const rightW = periods.length * periodW + actionsW;
 
   // one horizontal position shared by the header viewport, the body viewport
   // and the bottom scrollbar strip (ag-grid's fake horizontal scroll)
@@ -512,7 +516,7 @@ function GroupTable({
                 <div
                   key={y.year}
                   className="shrink-0 px-2"
-                  style={{ width: y.span * PERIOD_W }}
+                  style={{ width: y.span * periodW }}
                 >
                   {y.year}
                 </div>
@@ -529,7 +533,7 @@ function GroupTable({
                       p.start === currentStart &&
                         "border-l-2 border-l-[#f05100]/70",
                     )}
-                    style={{ width: PERIOD_W }}
+                    style={{ width: periodW }}
                   >
                     {b ? (
                       <span>
@@ -542,7 +546,7 @@ function GroupTable({
                   </div>
                 );
               })}
-              <div className="shrink-0" style={{ width: ACTIONS_W }} />
+              <div className="shrink-0" style={{ width: actionsW }} />
             </div>
           </div>
         </div>
@@ -630,7 +634,7 @@ function GroupTable({
                           className={cn(
                             "min-w-0 flex-1 text-left text-xs font-medium hover:text-[#f05100] hover:underline",
                             isMobile
-                              ? "line-clamp-2 leading-snug break-words"
+                              ? "line-clamp-2 text-balance leading-snug break-words"
                               : "truncate",
                           )}
                           title="Edit measurable"
@@ -727,7 +731,7 @@ function GroupTable({
                             p.start === currentStart &&
                               "border-l-2 border-l-[#f05100]/70",
                           )}
-                          style={{ width: PERIOD_W }}
+                          style={{ width: periodW }}
                         >
                           <EditableCell
                             metric={m}
@@ -740,9 +744,10 @@ function GroupTable({
                           />
                         </div>
                       ))}
+                      {actionsW > 0 ? (
                       <div
                         className="flex shrink-0 justify-center"
-                        style={{ width: ACTIONS_W }}
+                        style={{ width: actionsW }}
                       >
                         <DropdownMenu>
                           <DropdownMenuTrigger
@@ -772,6 +777,7 @@ function GroupTable({
                           </DropdownMenuContent>
                         </DropdownMenu>
                       </div>
+                      ) : null}
                     </div>
                   );
                 })}
