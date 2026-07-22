@@ -43,7 +43,12 @@ export default async function TodosPage({
 
   const me = await getMemberForUser(team.id, user.id);
   const [todos, members] = await Promise.all([
-    listTodos(team.id, { isPrivate, memberId: me?.id ?? null, archived }),
+    listTodos(team.id, {
+      isPrivate,
+      memberId: me?.id ?? null,
+      archived,
+      allStatuses: !archived,
+    }),
     listTeamMembers(team.id),
   ]);
 

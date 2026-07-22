@@ -182,6 +182,9 @@ export function TodosView({
 }) {
   const [query, setQuery] = useState("");
   const [ownerFilter, setOwnerFilter] = useState("all");
+  const [statusFilter, setStatusFilter] = useState<"open" | "done" | "all">(
+    "open",
+  );
   const [dialogOpen, setDialogOpen] = useState(false);
   const [dialogTodo, setDialogTodo] = useState<TodoRow | null>(null);
   const [, startTransition] = useTransition();
@@ -191,9 +194,14 @@ export function TodosView({
     return todos.filter(
       (t) =>
         (!q || t.title.toLowerCase().includes(q)) &&
-        (ownerFilter === "all" || t.owner_id === ownerFilter),
+        (ownerFilter === "all" || t.owner_id === ownerFilter) &&
+        (archived ||
+          statusFilter === "all" ||
+          (statusFilter === "done"
+            ? t.status === "done"
+            : t.status === "open")),
     );
-  }, [todos, query, ownerFilter]);
+  }, [todos, query, ownerFilter, statusFilter, archived]);
 
   const today = new Date().toISOString().slice(0, 10);
 
@@ -224,6 +232,32 @@ export function TodosView({
                   {m.full_name}
                 </DropdownMenuItem>
               ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        ) : null}
+        {!archived ? (
+          <DropdownMenu>
+            <DropdownMenuTrigger className="hover:bg-muted/50 flex items-center gap-1 rounded-full border px-3 py-1.5 text-xs">
+              <span className="text-muted-foreground">Status:</span>
+              <span className="font-medium">
+                {statusFilter === "all"
+                  ? "All"
+                  : statusFilter === "done"
+                    ? "Done"
+                    : "Open"}
+              </span>
+              <ChevronDown className="size-3" />
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start">
+              <DropdownMenuItem onClick={() => setStatusFilter("open")}>
+                Open
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setStatusFilter("done")}>
+                Done
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setStatusFilter("all")}>
+                All
+              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         ) : null}

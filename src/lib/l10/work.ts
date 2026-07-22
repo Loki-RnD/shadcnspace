@@ -87,6 +87,8 @@ export async function listTodos(
     /** member id whose private to-dos to show (required for private) */
     memberId?: string | null;
     archived?: boolean;
+    /** non-archive view: include done/dropped too (client filters by status) */
+    allStatuses?: boolean;
   },
 ): Promise<TodoRow[]> {
   const rows = await sql`
@@ -101,7 +103,8 @@ export async function listTodos(
       and t.is_private = ${opts.isPrivate}
       and (not ${opts.isPrivate} or t.owner_id = ${opts.memberId ?? null})
       and ((${opts.archived ?? false} and t.status in ('done','dropped'))
-        or (not ${opts.archived ?? false} and t.status = 'open'))
+        or (not ${opts.archived ?? false}
+            and (${opts.allStatuses ?? false} or t.status = 'open')))
     order by t.due_date nulls last, t.created_at
   `;
   return rows as TodoRow[];
