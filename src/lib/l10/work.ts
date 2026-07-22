@@ -91,7 +91,9 @@ export async function listTodos(
 ): Promise<TodoRow[]> {
   const rows = await sql`
     select
-      t.id, t.title, t.horizon, t.is_private, t.due_date, t.open_date,
+      t.id, t.title, t.horizon, t.is_private,
+      to_char(t.due_date, 'YYYY-MM-DD') as due_date,
+      to_char(t.open_date, 'YYYY-MM-DD') as open_date,
       t.status, t.owner_id, o.full_name as owner_name
     from l10.todos t
     left join l10.members o on o.id = t.owner_id
