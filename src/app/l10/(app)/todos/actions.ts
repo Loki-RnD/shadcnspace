@@ -31,6 +31,8 @@ export interface TodoInput {
   dueDate: string | null;
   isPrivate: boolean;
   description?: string | null;
+  /** omit = leave open_date untouched */
+  openDate?: string | null;
 }
 
 export async function createTodo(input: TodoInput) {
@@ -75,7 +77,9 @@ export async function updateTodo(input: TodoInput & { todoId: string }) {
     await sql`
       update l10.todos set
         title = ${input.title.trim()}, owner_id = ${input.ownerId},
-        due_date = ${input.dueDate}
+        due_date = ${input.dueDate},
+        open_date = case when ${input.openDate === undefined}
+                    then open_date else ${input.openDate ?? null}::date end
       where id = ${input.todoId} and team_id = ${input.teamId}
     `;
     revalidatePath("/l10/todos");

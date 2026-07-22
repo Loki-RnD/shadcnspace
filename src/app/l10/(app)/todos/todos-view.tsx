@@ -32,7 +32,6 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { NativeSelect } from "@/components/ui/native-select";
-import { OwnerAvatar } from "@/components/l10/owner-avatar";
 import type { MemberRow } from "@/lib/l10/scorecard";
 import type { TodoRow } from "@/lib/l10/work";
 import {
@@ -48,6 +47,10 @@ const df = new Intl.DateTimeFormat("en-GB", {
   month: "short",
   year: "numeric",
 });
+
+function firstName(name: string | null | undefined) {
+  return name?.trim().split(/\s+/)[0] ?? "";
+}
 
 function TodoDialog({
   open,
@@ -265,7 +268,11 @@ export function TodosView({
                 {!isPrivate ? (
                   <th className="hidden text-left sm:table-cell">Owner</th>
                 ) : null}
+                <th className="hidden text-left whitespace-nowrap sm:table-cell">
+                  Open Date
+                </th>
                 <th className="text-left whitespace-nowrap">Due Date</th>
+                <th className="text-left whitespace-nowrap">Status</th>
                 <th className="w-8" />
               </tr>
             </thead>
@@ -273,6 +280,35 @@ export function TodosView({
               {filtered.map((t) => {
                 const overdue =
                   t.status === "open" && t.due_date && t.due_date < today;
+                const save = (
+                  patch: Partial<{
+                    title: string;
+                    ownerId: string | null;
+                    openDate: string | null;
+                    dueDate: string | null;
+                  }>,
+                ) =>
+                  startTransition(async () => {
+                    const res = await updateTodo({
+                      teamId,
+                      todoId: t.id,
+                      title: patch.title ?? t.title,
+                      ownerId:
+                        patch.ownerId !== undefined
+                          ? patch.ownerId
+                          : (t.owner_id ?? null),
+                      openDate:
+                        patch.openDate !== undefined
+                          ? patch.openDate
+                          : (t.open_date?.slice(0, 10) ?? null),
+                      dueDate:
+                        patch.dueDate !== undefined
+                          ? patch.dueDate
+                          : (t.due_date?.slice(0, 10) ?? null),
+                      isPrivate,
+                    });
+                    if (!res.ok) toast.error(res.error);
+                  });
                 return (
                   <tr key={t.id} className="group border-b last:border-0">
                     <td className="px-3 py-2">
@@ -290,21 +326,28 @@ export function TodosView({
                         }
                       />
                     </td>
-                    <td className="px-3 py-2">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setDialogTodo(t);
-                          setDialogOpen(true);
+                    <td className="px-3 py-1.5">
+                      <input
+                        defaultValue={t.title}
+                        onBlur={(e) => {
+                          const v = e.target.value.trim();
+                          if (v && v !== t.title) save({ title: v });
+                          else e.target.value = t.title;
+                        }}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") e.currentTarget.blur();
+                          if (e.key === "Escape") {
+                            e.currentTarget.value = t.title;
+                            e.currentTarget.blur();
+                          }
                         }}
                         className={cn(
-                          "text-left text-sm font-medium hover:text-[#f05100] hover:underline",
+                          "w-full min-w-40 rounded border border-transparent bg-transparent px-1 py-1 text-sm font-medium outline-none",
+                          "hover:border-input focus:border-input focus:bg-background",
                           t.status !== "open" &&
                             "text-muted-foreground line-through",
                         )}
-                      >
-                        {t.title}
-                      </button>
+                      />
                       {t.status === "dropped" ? (
                         <span className="text-muted-foreground ml-2 text-[10px] uppercase">
                           dropped to issues
@@ -312,19 +355,78 @@ export function TodosView({
                       ) : null}
                     </td>
                     {!isPrivate ? (
-                      <td className="hidden px-3 py-2 sm:table-cell">
-                        <OwnerAvatar name={t.owner_name} />
+                      <td className="hidden px-3 py-1.5 sm:table-cell">
+                        <NativeSelect
+                          value={t.owner_id ?? ""}
+                          onChange={(e) =>
+                            save({ ownerId: e.target.value || null })
+                          }
+                          className="h-7 w-24 text-xs"
+                          title={t.owner_name ?? undefined}
+                        >
+                          <option value="">—</option>
+                          {members.map((m) => (
+                            <option key={m.id} value={m.id}>
+                              {firstName(m.full_name)}
+                            </option>
+                          ))}
+                        </NativeSelect>
                       </td>
                     ) : null}
-                    <td
-                      className={cn(
-                        "px-3 py-2 text-xs whitespace-nowrap",
-                        overdue
-                          ? "font-medium text-red-600 dark:text-red-400"
-                          : "text-muted-foreground",
+                    <td className="hidden px-3 py-1.5 sm:table-cell">
+                      <input
+                        type="date"
+                        defaultValue={t.open_date?.slice(0, 10) ?? ""}
+                        onChange={(e) =>
+                          save({ openDate: e.target.value || null })
+                        }
+                        className="text-muted-foreground hover:border-input focus:border-input h-7 rounded border border-transparent bg-transparent px-1 text-xs outline-none"
+                      />
+                    </td>
+                    <td className="px-3 py-1.5">
+                      <input
+                        type="date"
+                        defaultValue={t.due_date?.slice(0, 10) ?? ""}
+                        onChange={(e) =>
+                          save({ dueDate: e.target.value || null })
+                        }
+                        className={cn(
+                          "hover:border-input focus:border-input h-7 rounded border border-transparent bg-transparent px-1 text-xs outline-none",
+                          overdue
+                            ? "font-medium text-red-600 dark:text-red-400"
+                            : "text-muted-foreground",
+                        )}
+                      />
+                    </td>
+                    <td className="px-3 py-1.5">
+                      {t.status === "dropped" ? (
+                        <span className="text-muted-foreground text-xs">
+                          Dropped
+                        </span>
+                      ) : (
+                        <NativeSelect
+                          value={t.status === "done" ? "done" : "open"}
+                          onChange={(e) =>
+                            startTransition(async () => {
+                              const res = await toggleTodo(
+                                teamId,
+                                t.id,
+                                e.target.value === "done",
+                              );
+                              if (!res.ok) toast.error(res.error);
+                            })
+                          }
+                          className={cn(
+                            "h-7 w-26 text-xs",
+                            t.status === "done"
+                              ? "text-emerald-700 dark:text-emerald-400"
+                              : undefined,
+                          )}
+                        >
+                          <option value="open">Not done</option>
+                          <option value="done">Done</option>
+                        </NativeSelect>
                       )}
-                    >
-                      {t.due_date ? df.format(new Date(t.due_date)) : "—"}
                     </td>
                     <td className="px-1">
                       <DropdownMenu>
