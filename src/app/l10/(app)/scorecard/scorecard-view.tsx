@@ -95,7 +95,7 @@ const COLS_DESKTOP: ColsMap = {
   title: 220,
   owner: 50,
   goal: 130,
-  avg: 115,
+  avg: null, // hidden for now (set back to 115 to restore the Average column)
   total: 115,
 };
 

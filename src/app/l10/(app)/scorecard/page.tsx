@@ -36,17 +36,34 @@ const VIEW_BY: Record<Cadence, string> = {
   annual: "Year",
 };
 
-const RANGE_LABEL: Record<Cadence, string> = {
-  weekly: "Last 13 Weeks",
-  monthly: "Last 13 Months",
-  quarterly: "Last 8 Quarters",
-  annual: "Last 5 Years",
+// Date-range presets per cadence; the first entry is the default.
+const RANGE_OPTIONS: Record<Cadence, { count: number; label: string }[]> = {
+  weekly: [
+    { count: 13, label: "Last 13 Weeks" },
+    { count: 26, label: "Last 26 Weeks" },
+    { count: 52, label: "Last 52 Weeks" },
+  ],
+  monthly: [
+    { count: 13, label: "Last 13 Months" },
+    { count: 6, label: "Last 6 Months" },
+    { count: 24, label: "Last 24 Months" },
+  ],
+  quarterly: [
+    { count: 8, label: "Last 8 Quarters" },
+    { count: 4, label: "Last 4 Quarters" },
+    { count: 12, label: "Last 12 Quarters" },
+  ],
+  annual: [
+    { count: 5, label: "Last 5 Years" },
+    { count: 3, label: "Last 3 Years" },
+    { count: 10, label: "Last 10 Years" },
+  ],
 };
 
 export default async function ScorecardPage({
   searchParams,
 }: {
-  searchParams: Promise<{ team?: string; cadence?: string }>;
+  searchParams: Promise<{ team?: string; cadence?: string; range?: string }>;
 }) {
   const user = await getSessionUser();
   if (!user) return null; // middleware redirects; belt-and-braces
@@ -70,8 +87,13 @@ export default async function ScorecardPage({
       : "weekly"
   ) as Cadence;
 
+  const rangeOptions = RANGE_OPTIONS[cadence];
+  const range =
+    rangeOptions.find((r) => r.count === Number(params.range)) ??
+    rangeOptions[0];
+
   // chronological left → right; the current period is the rightmost column
-  const periods = trailingPeriods(cadence).reverse();
+  const periods = trailingPeriods(cadence, range.count).reverse();
   const [metrics, members] = await Promise.all([
     getScorecard(team.id, cadence, periods),
     listTeamMembers(team.id),
@@ -117,24 +139,60 @@ export default async function ScorecardPage({
           </DropdownMenuTrigger>
           <DropdownMenuContent align="start">
             {teams.map((t) => (
-              <DropdownMenuItem key={t.id} render={<Link href={`/l10/scorecard?team=${t.id}&cadence=${cadence}`} />}>
+              <DropdownMenuItem key={t.id} render={<Link href={`/l10/scorecard?team=${t.id}&cadence=${cadence}&range=${range.count}`} />}>
                 {t.business_short} · {t.name}
               </DropdownMenuItem>
             ))}
           </DropdownMenuContent>
         </DropdownMenu>
-        <div className="text-muted-foreground flex items-center gap-1 rounded-full border px-3 py-1.5 text-xs">
-          View by:{" "}
-          <span className="text-foreground font-medium">
-            {VIEW_BY[cadence]}
-          </span>
-        </div>
-        <div className="text-muted-foreground flex items-center gap-1 rounded-full border px-3 py-1.5 text-xs">
-          Date Range:{" "}
-          <span className="text-foreground font-medium">
-            {RANGE_LABEL[cadence]}
-          </span>
-        </div>
+        <DropdownMenu>
+          <DropdownMenuTrigger className="hover:bg-muted/50 flex items-center gap-1 rounded-full border px-3 py-1.5 text-xs">
+            <span className="text-muted-foreground">View by:</span>
+            <span className="font-medium">{VIEW_BY[cadence]}</span>
+            <ChevronDown className="size-3" />
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="start">
+            {CADENCE_TABS.map((t) => (
+              <DropdownMenuItem
+                key={t.key}
+                render={
+                  <Link
+                    href={`/l10/scorecard?team=${team.id}&cadence=${t.key}`}
+                  />
+                }
+                className={cn(t.key === cadence && "bg-muted/60 font-medium")}
+              >
+                {VIEW_BY[t.key]}
+              </DropdownMenuItem>
+            ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
+        <DropdownMenu>
+          <DropdownMenuTrigger className="hover:bg-muted/50 flex items-center gap-1 rounded-full border px-3 py-1.5 text-xs">
+            <span className="text-muted-foreground">Date Range:</span>
+            <span className="font-medium">{range.label}</span>
+            <ChevronDown className="size-3" />
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="start">
+            {[...rangeOptions]
+              .sort((a, b) => a.count - b.count)
+              .map((r) => (
+                <DropdownMenuItem
+                  key={r.count}
+                  render={
+                    <Link
+                      href={`/l10/scorecard?team=${team.id}&cadence=${cadence}&range=${r.count}`}
+                    />
+                  }
+                  className={cn(
+                    r.count === range.count && "bg-muted/60 font-medium",
+                  )}
+                >
+                  {r.label}
+                </DropdownMenuItem>
+              ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
 
       <ScorecardView
