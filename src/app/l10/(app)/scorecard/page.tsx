@@ -15,9 +15,14 @@ import {
   getScorecard,
   listTeamMembers,
   listTeamsForCompanies,
+  monthOptions,
+  periodsBetween,
   trailingPeriods,
+  weeksForMonths,
   type Cadence,
 } from "@/lib/l10/scorecard";
+import { MonthFilter } from "./month-filter";
+import { RangeFilter } from "./range-filter";
 import { ScorecardView } from "./scorecard-view";
 
 export const dynamic = "force-dynamic";
@@ -63,7 +68,14 @@ const RANGE_OPTIONS: Record<Cadence, { count: number; label: string }[]> = {
 export default async function ScorecardPage({
   searchParams,
 }: {
-  searchParams: Promise<{ team?: string; cadence?: string; range?: string }>;
+  searchParams: Promise<{
+    team?: string;
+    cadence?: string;
+    range?: string;
+    months?: string;
+    from?: string;
+    to?: string;
+  }>;
 }) {
   const user = await getSessionUser();
   if (!user) return null; // middleware redirects; belt-and-braces
@@ -92,8 +104,31 @@ export default async function ScorecardPage({
     rangeOptions.find((r) => r.count === Number(params.range)) ??
     rangeOptions[0];
 
+  // Month filter (weekly only) — selected months override the date range.
+  const months = cadence === "weekly" ? monthOptions(12) : [];
+  const selectedMonths = (params.months ?? "")
+    .split(",")
+    .filter((k) => months.some((o) => o.key === k));
+
+  // Custom calendar range — overrides the preset (months, if set, win)
+  const ISO_DAY = /^\d{4}-\d{2}-\d{2}$/;
+  const custom =
+    params.from &&
+    params.to &&
+    ISO_DAY.test(params.from) &&
+    ISO_DAY.test(params.to) &&
+    params.from <= params.to
+      ? { from: params.from, to: params.to }
+      : null;
+
   // chronological left → right; the current period is the rightmost column
-  const periods = trailingPeriods(cadence, range.count).reverse();
+  const periods =
+    selectedMonths.length > 0
+      ? weeksForMonths(selectedMonths)
+      : custom
+        ? periodsBetween(cadence, custom.from, custom.to)
+        : trailingPeriods(cadence, range.count).reverse();
+  const currentPeriodStart = trailingPeriods(cadence, 1)[0].start;
   const [metrics, members] = await Promise.all([
     getScorecard(team.id, cadence, periods),
     listTeamMembers(team.id),
@@ -139,7 +174,7 @@ export default async function ScorecardPage({
           </DropdownMenuTrigger>
           <DropdownMenuContent align="start">
             {teams.map((t) => (
-              <DropdownMenuItem key={t.id} render={<Link href={`/l10/scorecard?team=${t.id}&cadence=${cadence}&range=${range.count}`} />}>
+              <DropdownMenuItem key={t.id} render={<Link href={`/l10/scorecard?team=${t.id}&cadence=${cadence}${custom ? `&from=${custom.from}&to=${custom.to}` : `&range=${range.count}`}${selectedMonths.length ? `&months=${selectedMonths.join(",")}` : ""}`} />}>
                 {t.business_short} · {t.name}
               </DropdownMenuItem>
             ))}
@@ -167,38 +202,29 @@ export default async function ScorecardPage({
             ))}
           </DropdownMenuContent>
         </DropdownMenu>
-        <DropdownMenu>
-          <DropdownMenuTrigger className="hover:bg-muted/50 flex items-center gap-1 rounded-full border px-3 py-1.5 text-xs">
-            <span className="text-muted-foreground">Date Range:</span>
-            <span className="font-medium">{range.label}</span>
-            <ChevronDown className="size-3" />
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="start">
-            {[...rangeOptions]
-              .sort((a, b) => a.count - b.count)
-              .map((r) => (
-                <DropdownMenuItem
-                  key={r.count}
-                  render={
-                    <Link
-                      href={`/l10/scorecard?team=${team.id}&cadence=${cadence}&range=${r.count}`}
-                    />
-                  }
-                  className={cn(
-                    r.count === range.count && "bg-muted/60 font-medium",
-                  )}
-                >
-                  {r.label}
-                </DropdownMenuItem>
-              ))}
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <RangeFilter
+          teamId={team.id}
+          cadence={cadence}
+          presets={[...rangeOptions].sort((a, b) => a.count - b.count)}
+          activeCount={range.count}
+          custom={custom}
+          dimmed={selectedMonths.length > 0}
+        />
+        {cadence === "weekly" ? (
+          <MonthFilter
+            teamId={team.id}
+            range={range.count}
+            options={months}
+            selected={selectedMonths}
+          />
+        ) : null}
       </div>
 
       <ScorecardView
         teamId={team.id}
         cadence={cadence}
         periods={periods}
+        currentPeriodStart={currentPeriodStart}
         metrics={metrics}
         members={members}
       />

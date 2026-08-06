@@ -109,6 +109,15 @@ const COLS_MOBILE: ColsMap = {
   total: null,
 };
 
+// The HOD workbook distinguishes weekly vs monthly targets — say which one
+// the column holds instead of Ninety's bare "Goal".
+const TARGET_LABEL: Record<Cadence, string> = {
+  weekly: "Weekly Target",
+  monthly: "Monthly Target",
+  quarterly: "Quarterly Target",
+  annual: "Annual Target",
+};
+
 const PERIOD_W = 105; // ag-grid score column width
 const ACTIONS_W = 40; // trailing row-menu column (ours; Ninety has none)
 const HEADER_H = 75; // 30px year band + 45px column labels
@@ -358,6 +367,7 @@ function GroupTable({
   rows,
   periods,
   cadence,
+  currentPeriodStart,
   checked,
   setChecked,
   overrides,
@@ -367,6 +377,7 @@ function GroupTable({
   rows: MetricRow[];
   periods: PeriodWindow[];
   cadence: Cadence;
+  currentPeriodStart?: string;
   checked: Record<string, boolean>;
   setChecked: (updates: Record<string, boolean>) => void;
   overrides: Record<string, Record<string, Cell | null>>;
@@ -379,7 +390,9 @@ function GroupTable({
   const vScrollRef = useRef<HTMLDivElement>(null);
   const [sbW, setSbW] = useState(0);
   const [hovered, setHovered] = useState<string | null>(null);
-  const currentStart = periods[periods.length - 1]?.start;
+  // highlight the true current period; with a month filter active it may be
+  // mid-grid or absent, so don't assume the rightmost column
+  const currentStart = currentPeriodStart ?? periods[periods.length - 1]?.start;
   const isMobile = useIsMobile();
   const cols = isMobile ? COLS_MOBILE : COLS_DESKTOP;
   const fixedW = fixedWidth(cols);
@@ -489,7 +502,7 @@ function GroupTable({
               className="flex items-center px-2"
               style={{ width: cols.goal }}
             >
-              Goal
+              {TARGET_LABEL[cadence]}
             </div>
           ) : null}
           {cols.avg ? (
@@ -677,11 +690,18 @@ function GroupTable({
                       </div>
                     ) : null}
                     {cols.goal ? (
-                      <div
-                        className="truncate px-2 text-xs whitespace-nowrap"
-                        style={{ width: cols.goal }}
-                      >
-                        {m.goal_text ?? "—"}
+                      <div className="min-w-0 px-2" style={{ width: cols.goal }}>
+                        <p className="truncate text-xs whitespace-nowrap">
+                          {m.goal_text ?? "—"}
+                        </p>
+                        {/* revenue measurables: surface the workbook's
+                            monthly target (quarterly ÷ 3) under the weekly */}
+                        {cadence === "weekly" &&
+                        m.quarterly_target !== null ? (
+                          <p className="text-muted-foreground truncate text-[10px] whitespace-nowrap tabular-nums">
+                            {nf.format(Math.round(m.quarterly_target / 3))} / mo
+                          </p>
+                        ) : null}
                       </div>
                     ) : null}
                     {cols.avg ? (
@@ -807,12 +827,14 @@ export function ScorecardView({
   teamId,
   cadence,
   periods,
+  currentPeriodStart,
   metrics,
   members,
 }: {
   teamId: string;
   cadence: Cadence;
   periods: PeriodWindow[]; // chronological, oldest → newest
+  currentPeriodStart?: string;
   metrics: MetricRow[];
   members: MemberRow[];
 }) {
@@ -987,6 +1009,7 @@ export function ScorecardView({
                 rows={rows}
                 periods={periods}
                 cadence={cadence}
+                currentPeriodStart={currentPeriodStart}
                 checked={checked}
                 setChecked={(updates) =>
                   setCheckedState((c) => ({ ...c, ...updates }))

@@ -128,6 +128,143 @@ export function trailingPeriods(
   return out;
 }
 
+export interface MonthOption {
+  key: string; // 'yyyy-mm'
+  label: string; // 'Jul 2026'
+}
+
+/** Recent calendar months, newest first (index 0 = current month). */
+export function monthOptions(count = 12, today = new Date()): MonthOption[] {
+  const out: MonthOption[] = [];
+  for (let i = 0; i < count; i++) {
+    const d = new Date(
+      Date.UTC(today.getUTCFullYear(), today.getUTCMonth() - i, 1),
+    );
+    const mm = String(d.getUTCMonth() + 1).padStart(2, "0");
+    out.push({
+      key: `${d.getUTCFullYear()}-${mm}`,
+      label: `${MONTHS[d.getUTCMonth()]} ${d.getUTCFullYear()}`,
+    });
+  }
+  return out;
+}
+
+/** Weekly windows for the given months ('yyyy-mm'), chronological. A week
+ *  belongs to the month containing its Thursday (majority of Mon–Sat days),
+ *  so single-month totals stay additive across adjacent months. */
+export function weeksForMonths(monthKeys: string[]): PeriodWindow[] {
+  const map = new Map<string, PeriodWindow>();
+  for (const key of monthKeys) {
+    const [y, m] = key.split("-").map(Number);
+    if (!y || !m) continue;
+    const monthEnd = new Date(Date.UTC(y, m, 0));
+    // Monday of the week containing the 1st
+    const monday = new Date(Date.UTC(y, m - 1, 1));
+    monday.setUTCDate(monday.getUTCDate() - ((monday.getUTCDay() + 6) % 7));
+    for (; monday <= monthEnd; monday.setUTCDate(monday.getUTCDate() + 7)) {
+      const thursday = new Date(monday);
+      thursday.setUTCDate(thursday.getUTCDate() + 3);
+      if (thursday.getUTCFullYear() !== y || thursday.getUTCMonth() !== m - 1)
+        continue;
+      const end = new Date(monday);
+      end.setUTCDate(end.getUTCDate() + 5);
+      map.set(iso(monday), {
+        start: iso(monday),
+        end: iso(end),
+        label: `${md(monday)} - ${md(end)}`,
+        year: monday.getUTCFullYear(),
+      });
+    }
+  }
+  return [...map.values()].sort((a, b) => (a.start < b.start ? -1 : 1));
+}
+
+/** Periods of a cadence overlapping [from, to] (ISO dates), chronological.
+ *  Capped at 120 periods to keep the grid sane. */
+export function periodsBetween(
+  cadence: Cadence,
+  from: string,
+  to: string,
+): PeriodWindow[] {
+  const [fy, fm, fd] = from.split("-").map(Number);
+  const [ty, tm, td] = to.split("-").map(Number);
+  const lo = new Date(Date.UTC(fy, fm - 1, fd));
+  const hi = new Date(Date.UTC(ty, tm - 1, td));
+  if (lo > hi) return [];
+  const out: PeriodWindow[] = [];
+
+  if (cadence === "weekly") {
+    // Monday of the week containing `from`; Mon–Sat windows overlapping range
+    const monday = new Date(lo);
+    monday.setUTCDate(monday.getUTCDate() - ((monday.getUTCDay() + 6) % 7));
+    for (
+      ;
+      monday <= hi && out.length < 120;
+      monday.setUTCDate(monday.getUTCDate() + 7)
+    ) {
+      const end = new Date(monday);
+      end.setUTCDate(end.getUTCDate() + 5);
+      if (end < lo) continue;
+      out.push({
+        start: iso(monday),
+        end: iso(end),
+        label: `${md(monday)} - ${md(end)}`,
+        year: monday.getUTCFullYear(),
+      });
+    }
+  } else if (cadence === "monthly") {
+    let y = lo.getUTCFullYear();
+    let m = lo.getUTCMonth();
+    while (out.length < 120) {
+      const start = new Date(Date.UTC(y, m, 1));
+      if (start > hi) break;
+      out.push({
+        start: iso(start),
+        end: iso(new Date(Date.UTC(y, m + 1, 0))),
+        label: `${MONTHS[m]} ${y}`,
+        year: y,
+      });
+      m++;
+      if (m > 11) {
+        m = 0;
+        y++;
+      }
+    }
+  } else if (cadence === "quarterly") {
+    let y = lo.getUTCFullYear();
+    let q = Math.floor(lo.getUTCMonth() / 3);
+    while (out.length < 120) {
+      const start = new Date(Date.UTC(y, q * 3, 1));
+      if (start > hi) break;
+      out.push({
+        start: iso(start),
+        end: iso(new Date(Date.UTC(y, q * 3 + 3, 0))),
+        label: `Q${q + 1} ${y}`,
+        year: y,
+      });
+      q++;
+      if (q > 3) {
+        q = 0;
+        y++;
+      }
+    }
+  } else {
+    for (
+      let y = lo.getUTCFullYear();
+      y <= hi.getUTCFullYear() && out.length < 120;
+      y++
+    ) {
+      out.push({
+        start: iso(new Date(Date.UTC(y, 0, 1))),
+        end: iso(new Date(Date.UTC(y, 11, 31))),
+        label: `${y}`,
+        year: y,
+      });
+    }
+  }
+  return out;
+}
+
 /** Metrics + cell values for a team/cadence over the given period windows. */
 export async function getScorecard(
   teamId: string,
