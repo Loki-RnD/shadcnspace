@@ -61,7 +61,8 @@ export async function listRocks(
   const quarter = currentQuarter();
   const rows = await sql`
     select
-      r.id, r.title, r.quarter, r.status, r.pct, r.due_date, r.is_company,
+      r.id, r.title, r.quarter, r.status, r.pct,
+      to_char(r.due_date, 'YYYY-MM-DD') as due_date, r.is_company,
       r.owner_id, o.full_name as owner_name,
       coalesce((
         select json_agg(json_build_object(
