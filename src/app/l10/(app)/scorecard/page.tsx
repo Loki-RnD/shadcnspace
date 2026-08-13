@@ -30,6 +30,7 @@ import {
 import { FilterPill } from "./filter-pill";
 import { RangeFilter } from "./range-filter";
 import { ScorecardView } from "./scorecard-view";
+import { TrendsView } from "./trends-view";
 
 export const dynamic = "force-dynamic";
 
@@ -144,6 +145,10 @@ export default async function ScorecardPage({
       ? str("cadence")
       : "weekly"
   ) as Cadence;
+  // Trends is a view over the current cadence, not a cadence of its own —
+  // the cadence param keeps driving which metrics/periods are fetched, so
+  // the View-by and range filters double as Ninety's Type/Date Range.
+  const isTrends = str("view") === "trends";
   const p = PREFIX[cadence];
 
   const presets = RANGE_PRESETS[cadence];
@@ -216,16 +221,24 @@ export default async function ScorecardPage({
 
       {/* Cadence tabs — Trends | Weekly | Monthly | Quarterly | Annual */}
       <div className="mb-4 flex items-center gap-4 overflow-x-auto border-b sm:gap-6">
-        <span className="text-muted-foreground/50 shrink-0 cursor-not-allowed pb-2 text-sm">
+        <Link
+          href={href(params, { team: team.id, view: "trends" })}
+          className={cn(
+            "-mb-px shrink-0 border-b-2 pb-2 text-sm whitespace-nowrap transition-colors",
+            isTrends
+              ? "border-[#f05100] font-semibold text-[#f05100]"
+              : "text-muted-foreground hover:text-foreground border-transparent",
+          )}
+        >
           Trends
-        </span>
+        </Link>
         {CADENCE_TABS.map((t) => (
           <Link
             key={t.key}
-            href={href(params, { team: team.id, cadence: t.key })}
+            href={href(params, { team: team.id, cadence: t.key, view: null })}
             className={cn(
               "-mb-px shrink-0 border-b-2 pb-2 text-sm whitespace-nowrap transition-colors",
-              t.key === cadence
+              !isTrends && t.key === cadence
                 ? "border-[#f05100] font-semibold text-[#f05100]"
                 : "text-muted-foreground hover:text-foreground border-transparent",
             )}
@@ -312,14 +325,18 @@ export default async function ScorecardPage({
         ) : null}
       </div>
 
-      <ScorecardView
-        teamId={team.id}
-        cadence={cadence}
-        periods={periods}
-        currentPeriodStart={currentPeriodStart}
-        metrics={metrics}
-        members={members}
-      />
+      {isTrends ? (
+        <TrendsView metrics={metrics} periods={periods} cadence={cadence} />
+      ) : (
+        <ScorecardView
+          teamId={team.id}
+          cadence={cadence}
+          periods={periods}
+          currentPeriodStart={currentPeriodStart}
+          metrics={metrics}
+          members={members}
+        />
+      )}
     </>
   );
 }
