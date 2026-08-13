@@ -14,14 +14,14 @@ import {
   Line,
   LineChart,
   ReferenceLine,
-  ResponsiveContainer,
-  Tooltip as ChartTooltip,
+  Tooltip as RechartsTooltip,
   XAxis,
   YAxis,
 } from "recharts";
 
 import { cn } from "@/lib/utils";
 import { Card, CardContent } from "@/components/ui/card";
+import { ChartContainer, type ChartConfig } from "@/components/ui/chart";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -40,6 +40,13 @@ import {
 const ORANGE = "#f05100";
 const AVERAGE_GRAY = "#9ca3af";
 const nf = new Intl.NumberFormat("en-KE", { maximumFractionDigits: 2 });
+
+// ChartContainer (not raw ResponsiveContainer) — it seeds an initial
+// dimension, without which recharts measures -1×-1 during hydration and
+// never draws.
+const trendConfig = {
+  value: { label: "Actual", color: ORANGE },
+} satisfies ChartConfig;
 
 const STATUS_META: Record<
   TrendStatus,
@@ -155,17 +162,16 @@ function TrendCard({
       <p className="mb-2 text-sm font-semibold">{metric.title}</p>
 
       {populated.length > 0 ? (
-        <div className="h-44">
-          <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={data} margin={{ top: 4, right: 8, bottom: 0, left: -14 }}>
-              <XAxis
-                dataKey="label"
-                tick={{ fontSize: 8 }}
-                interval="preserveStartEnd"
-                tickFormatter={(l: string) => l.split(" - ")[0]}
-              />
-              <YAxis tick={{ fontSize: 9 }} width={56} />
-              <ChartTooltip
+        <ChartContainer config={trendConfig} className="h-44 w-full aspect-auto">
+          <LineChart data={data} margin={{ top: 4, right: 8, bottom: 0, left: -14 }}>
+            <XAxis
+              dataKey="label"
+              tick={{ fontSize: 8 }}
+              interval="preserveStartEnd"
+              tickFormatter={(l: string) => l.split(" - ")[0]}
+            />
+            <YAxis tick={{ fontSize: 9 }} width={56} />
+            <RechartsTooltip
                 content={({ active, payload, label }) => {
                   if (!active || !payload?.length) return null;
                   const v = payload[0]?.value;
@@ -210,9 +216,8 @@ function TrendCard({
                 dot={{ r: 2.5 }}
                 connectNulls
               />
-            </LineChart>
-          </ResponsiveContainer>
-        </div>
+          </LineChart>
+        </ChartContainer>
       ) : (
         <p className="text-muted-foreground flex h-44 items-center justify-center text-xs">
           No data to display
