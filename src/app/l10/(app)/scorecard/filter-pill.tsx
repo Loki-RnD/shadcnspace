@@ -1,6 +1,6 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { ChevronDown } from "lucide-react";
 
 import {
@@ -13,49 +13,51 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 
-// Multi-select month filter for the weekly scorecard. URL-driven like the
-// other pills; checkbox items keep the menu open so several months can be
-// picked in one go.
+// Generic multi-select filter pill (Owner / Months / Quarters). URL-driven:
+// edits only its own query param so every other filter — including the other
+// cadences' namespaced params — survives. Checkbox items keep the menu open
+// so several options can be picked in one go.
 
-interface MonthOption {
-  key: string; // 'yyyy-mm'
-  label: string; // 'Jul 2026'
-}
-
-export function MonthFilter({
-  teamId,
-  range,
+export function FilterPill({
+  param,
+  label,
+  allLabel = "All",
   options,
   selected,
 }: {
-  teamId: string;
-  range: number;
-  options: MonthOption[];
+  /** query param this pill owns, e.g. 'w_months' */
+  param: string;
+  label: string;
+  allLabel?: string;
+  options: { key: string; label: string }[];
   selected: string[];
 }) {
   const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
 
-  const url = (months: string[]) =>
-    `/l10/scorecard?team=${teamId}&cadence=weekly&range=${range}` +
-    (months.length ? `&months=${months.join(",")}` : "");
+  const push = (keys: string[]) => {
+    const q = new URLSearchParams(searchParams.toString());
+    if (keys.length) q.set(param, keys.join(","));
+    else q.delete(param);
+    router.push(`${pathname}?${q.toString()}`);
+  };
 
   const toggle = (key: string, checked: boolean) => {
     const next = checked
       ? [...selected, key]
       : selected.filter((k) => k !== key);
-    // keep param order stable (newest first, matching the menu)
-    router.push(
-      url(options.map((o) => o.key).filter((k) => next.includes(k))),
-    );
+    // keep param order stable, matching the menu
+    push(options.map((o) => o.key).filter((k) => next.includes(k)));
   };
 
   const picked = options.filter((o) => selected.includes(o.key));
-  const label =
+  const summary =
     picked.length === 0
-      ? "All"
+      ? allLabel
       : picked.length <= 2
         ? picked.map((o) => o.label).join(", ")
-        : `${picked.length} months`;
+        : `${picked.length} selected`;
 
   return (
     <DropdownMenu>
@@ -68,17 +70,17 @@ export function MonthFilter({
         )}
       >
         <span className={picked.length > 0 ? "" : "text-muted-foreground"}>
-          Months:
+          {label}:
         </span>
-        <span className="font-medium">{label}</span>
+        <span className="font-medium">{summary}</span>
         <ChevronDown className="size-3" />
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="start" className="w-44">
+      <DropdownMenuContent align="start" className="max-h-80 w-48 overflow-y-auto">
         <DropdownMenuItem
-          onClick={() => router.push(url([]))}
+          onClick={() => push([])}
           className={cn(picked.length === 0 && "bg-muted/60 font-medium")}
         >
-          All (use date range)
+          {allLabel}
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         {options.map((o) => (

@@ -39,6 +39,7 @@ export interface MetricRow {
   goal_max: number | null;
   /** quarterly revenue target; goal_value derives from it (/13.5 wk, /3 mo) */
   quarterly_target: number | null;
+  owner_id: string | null;
   owner_name: string | null;
   /** cell values keyed by period start ISO date */
   values: Record<
@@ -265,6 +266,130 @@ export function periodsBetween(
   return out;
 }
 
+export interface QuarterOption {
+  key: string; // 'yyyy-Qn'
+  label: string; // 'Q3 2026'
+}
+
+/** Recent calendar quarters, newest first (index 0 = current quarter). */
+export function quarterOptions(count = 6, today = new Date()): QuarterOption[] {
+  const out: QuarterOption[] = [];
+  let y = today.getUTCFullYear();
+  let q = Math.floor(today.getUTCMonth() / 3); // 0-based
+  for (let i = 0; i < count; i++) {
+    out.push({ key: `${y}-Q${q + 1}`, label: `Q${q + 1} ${y}` });
+    q--;
+    if (q < 0) {
+      q = 3;
+      y--;
+    }
+  }
+  return out;
+}
+
+/** Month keys ('yyyy-mm') covered by the given quarters ('yyyy-Qn'). */
+export function monthsOfQuarters(quarterKeys: string[]): string[] {
+  const out: string[] = [];
+  for (const key of quarterKeys) {
+    const m = key.match(/^(\d{4})-Q([1-4])$/);
+    if (!m) continue;
+    const y = Number(m[1]);
+    const q = Number(m[2]);
+    for (let i = 0; i < 3; i++)
+      out.push(`${y}-${String((q - 1) * 3 + i + 1).padStart(2, "0")}`);
+  }
+  return out;
+}
+
+/** Monthly windows for the given months ('yyyy-mm'), chronological. */
+export function monthPeriods(monthKeys: string[]): PeriodWindow[] {
+  const map = new Map<string, PeriodWindow>();
+  for (const key of monthKeys) {
+    const [y, m] = key.split("-").map(Number);
+    if (!y || !m) continue;
+    const start = new Date(Date.UTC(y, m - 1, 1));
+    map.set(iso(start), {
+      start: iso(start),
+      end: iso(new Date(Date.UTC(y, m, 0))),
+      label: `${MONTHS[m - 1]} ${y}`,
+      year: y,
+    });
+  }
+  return [...map.values()].sort((a, b) => (a.start < b.start ? -1 : 1));
+}
+
+/** Quarterly windows for the given quarters ('yyyy-Qn'), chronological. */
+export function quarterPeriods(quarterKeys: string[]): PeriodWindow[] {
+  const map = new Map<string, PeriodWindow>();
+  for (const key of quarterKeys) {
+    const m = key.match(/^(\d{4})-Q([1-4])$/);
+    if (!m) continue;
+    const y = Number(m[1]);
+    const q = Number(m[2]) - 1;
+    const start = new Date(Date.UTC(y, q * 3, 1));
+    map.set(iso(start), {
+      start: iso(start),
+      end: iso(new Date(Date.UTC(y, q * 3 + 3, 0))),
+      label: `Q${q + 1} ${y}`,
+      year: y,
+    });
+  }
+  return [...map.values()].sort((a, b) => (a.start < b.start ? -1 : 1));
+}
+
+/** Resolve a range-preset key to period windows, chronological.
+ *  Numeric keys ('13w', '6m', '8q', '5y') are trailing-N presets; named keys
+ *  are calendar windows: tm/lm = this/last month, tq/lq = this/last quarter,
+ *  ytd = Jan 1 → today, ty/ly = this/last full year. */
+export function presetPeriods(
+  cadence: Cadence,
+  key: string,
+  today = new Date(),
+): PeriodWindow[] {
+  const trailing = key.match(/^(\d+)[wmqy]$/);
+  if (trailing)
+    return trailingPeriods(cadence, Number(trailing[1]), today).reverse();
+
+  const y = today.getUTCFullYear();
+  const m0 = today.getUTCMonth();
+  const todayIso = iso(
+    new Date(Date.UTC(y, m0, today.getUTCDate())),
+  );
+  const monthKey = (d: Date) =>
+    `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, "0")}`;
+  const byMonths = (keys: string[]) =>
+    cadence === "weekly" ? weeksForMonths(keys) : monthPeriods(keys);
+
+  switch (key) {
+    case "tm":
+      return byMonths([monthKey(new Date(Date.UTC(y, m0, 1)))]);
+    case "lm":
+      return byMonths([monthKey(new Date(Date.UTC(y, m0 - 1, 1)))]);
+    case "tq":
+    case "lq": {
+      let q = Math.floor(m0 / 3);
+      let qy = y;
+      if (key === "lq") {
+        q--;
+        if (q < 0) {
+          q = 3;
+          qy--;
+        }
+      }
+      const qk = `${qy}-Q${q + 1}`;
+      if (cadence === "quarterly") return quarterPeriods([qk]);
+      return byMonths(monthsOfQuarters([qk]));
+    }
+    case "ytd":
+      return periodsBetween(cadence, `${y}-01-01`, todayIso);
+    case "ty":
+      return periodsBetween(cadence, `${y}-01-01`, `${y}-12-31`);
+    case "ly":
+      return periodsBetween(cadence, `${y - 1}-01-01`, `${y - 1}-12-31`);
+  }
+  return trailingPeriods(cadence, undefined, today).reverse();
+}
+
 /** Metrics + cell values for a team/cadence over the given period windows. */
 export async function getScorecard(
   teamId: string,
@@ -276,7 +401,7 @@ export async function getScorecard(
     select
       m.id, m.seq, m.group_name, m.title, m.unit, m.goal_text,
       m.goal_op, m.goal_value, m.goal_min, m.goal_max, m.quarterly_target,
-      o.full_name as owner_name,
+      m.owner_id, o.full_name as owner_name,
       coalesce((
         select json_object_agg(
           w.week_start,

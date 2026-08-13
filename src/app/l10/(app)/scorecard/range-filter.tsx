@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { ChevronDown } from "lucide-react";
 import type { DateRange } from "react-day-picker";
 
@@ -14,9 +14,11 @@ import {
 } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 
-// Date Range pill: trailing presets plus a from/to range calendar. Custom
-// ranges land in the URL as ?from=yyyy-mm-dd&to=yyyy-mm-dd and override the
-// preset; picking either clears the month filter (last-clicked wins).
+// Date Range pill: calendar presets (This Month / This Quarter / YTD / ...),
+// trailing-N presets, plus a from/to range calendar. Params are namespaced
+// per cadence (w_range, m_from, ...) so each view keeps its own filters; the
+// pill edits only its own params and clears the month/quarter picks for its
+// cadence (last-clicked wins), leaving everything else in the URL intact.
 
 const MONTHS = [
   "Jan", "Feb", "Mar", "Apr", "May", "Jun",
@@ -42,23 +44,31 @@ function fmt(s: string): string {
 }
 
 export function RangeFilter({
-  teamId,
-  cadence,
+  rangeParam,
+  fromParam,
+  toParam,
+  clearParams,
   presets,
-  activeCount,
+  activeKey,
   custom,
   dimmed,
 }: {
-  teamId: string;
-  cadence: string;
-  presets: { count: number; label: string }[];
-  activeCount: number;
+  /** namespaced query params this pill owns, e.g. 'w_range' / 'w_from' / 'w_to' */
+  rangeParam: string;
+  fromParam: string;
+  toParam: string;
+  /** params cleared when a preset/custom range is picked (month/quarter picks) */
+  clearParams: string[];
+  presets: { key: string; label: string }[];
+  activeKey: string;
   /** active custom range from the URL, if any */
   custom: { from: string; to: string } | null;
-  /** true when the month filter overrides this pill */
+  /** true when a month/quarter pick overrides this pill */
   dimmed: boolean;
 }) {
   const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
   const [open, setOpen] = useState(false);
   const [draft, setDraft] = useState<DateRange | undefined>(
     custom
@@ -66,15 +76,28 @@ export function RangeFilter({
       : undefined,
   );
 
-  const base = `/l10/scorecard?team=${teamId}&cadence=${cadence}`;
+  const push = (set: Record<string, string | null>) => {
+    const q = new URLSearchParams(searchParams.toString());
+    for (const key of clearParams) q.delete(key);
+    for (const [key, value] of Object.entries(set)) {
+      if (value === null) q.delete(key);
+      else q.set(key, value);
+    }
+    router.push(`${pathname}?${q.toString()}`);
+  };
+
   const label = custom
     ? `${fmt(custom.from)} – ${fmt(custom.to)}`
-    : (presets.find((p) => p.count === activeCount)?.label ?? "");
+    : (presets.find((p) => p.key === activeKey)?.label ?? "");
 
   const apply = () => {
     if (!draft?.from || !draft.to) return;
     setOpen(false);
-    router.push(`${base}&from=${isoLocal(draft.from)}&to=${isoLocal(draft.to)}`);
+    push({
+      [rangeParam]: null,
+      [fromParam]: isoLocal(draft.from),
+      [toParam]: isoLocal(draft.to),
+    });
   };
 
   return (
@@ -105,17 +128,21 @@ export function RangeFilter({
           <div className="flex shrink-0 flex-col gap-1 border-b p-2 sm:border-r sm:border-b-0">
             {presets.map((p) => (
               <button
-                key={p.count}
+                key={p.key}
                 type="button"
                 onClick={() => {
                   setOpen(false);
-                  router.push(`${base}&range=${p.count}`);
+                  push({
+                    [rangeParam]: p.key,
+                    [fromParam]: null,
+                    [toParam]: null,
+                  });
                 }}
                 className={cn(
                   "hover:bg-muted rounded-md px-2 py-1.5 text-left text-xs whitespace-nowrap",
                   !custom &&
                     !dimmed &&
-                    p.count === activeCount &&
+                    p.key === activeKey &&
                     "bg-muted font-medium",
                 )}
               >
@@ -139,7 +166,7 @@ export function RangeFilter({
                   onClick={() => {
                     setDraft(undefined);
                     setOpen(false);
-                    router.push(`${base}&range=${activeCount}`);
+                    push({ [fromParam]: null, [toParam]: null });
                   }}
                 >
                   Clear
