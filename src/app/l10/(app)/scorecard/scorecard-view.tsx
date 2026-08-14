@@ -10,8 +10,10 @@ import {
 } from "react";
 import { toast } from "sonner";
 import {
+  ArrowUpDown,
   ChevronDown,
   CirclePlus,
+  GripVertical,
   Ellipsis,
   LineChart as LineChartIcon,
   Pencil,
@@ -61,6 +63,7 @@ import type {
 import {
   archiveMetric,
   listArchivedMetrics,
+  reorderMetrics,
   restoreMetric,
   saveCellValue,
   type ArchivedMetric,
@@ -373,6 +376,7 @@ function GroupTable({
   overrides,
   setOverride,
   onEdit,
+  reorder,
 }: {
   rows: MetricRow[];
   periods: PeriodWindow[];
@@ -383,6 +387,8 @@ function GroupTable({
   overrides: Record<string, Record<string, Cell | null>>;
   setOverride: (metricId: string, start: string, cell: Cell | null) => void;
   onEdit: (metric: MetricRow) => void;
+  /** reorder mode — the checkbox column becomes a drag handle */
+  reorder: boolean;
 }) {
   const headerRef = useRef<HTMLDivElement>(null);
   const bodyRef = useRef<HTMLDivElement>(null);
@@ -390,6 +396,41 @@ function GroupTable({
   const vScrollRef = useRef<HTMLDivElement>(null);
   const [sbW, setSbW] = useState(0);
   const [hovered, setHovered] = useState<string | null>(null);
+  const [movePending, startMove] = useTransition();
+  // Pointer-drag reorder. Rows are fixed-height, so the drop slot is just
+  // (pointerY − stack top) ÷ ROW_H; pointer capture on the grip gives mouse
+  // and touch (press-drag) one code path. The new order applies locally at
+  // once and the server refresh confirms it.
+  const [drag, setDrag] = useState<{ from: number; over: number } | null>(null);
+  const [localOrder, setLocalOrder] = useState<string[] | null>(null);
+  const rowStackRef = useRef<HTMLDivElement>(null);
+
+  const orderedRows = useMemo(() => {
+    if (!localOrder) return rows;
+    const byId = new Map(rows.map((r) => [r.id, r]));
+    const out = localOrder.flatMap((id) => byId.get(id) ?? []);
+    return out.length === rows.length ? out : rows;
+  }, [rows, localOrder]);
+
+  // the server-confirmed order arrived (or membership changed) — drop the
+  // optimistic override
+  const rowIdsKey = rows.map((r) => r.id).join(",");
+  useEffect(() => setLocalOrder(null), [rowIdsKey]);
+
+  function commitOrder(from: number, over: number) {
+    if (from === over) return;
+    const ids = orderedRows.map((r) => r.id);
+    const [moved] = ids.splice(from, 1);
+    ids.splice(over, 0, moved);
+    setLocalOrder(ids);
+    startMove(async () => {
+      const res = await reorderMetrics(moved, ids);
+      if (!res.ok) {
+        setLocalOrder(null);
+        toast.error(res.error);
+      }
+    });
+  }
   // highlight the true current period; with a month filter active it may be
   // mid-grid or absent, so don't assume the rightmost column
   const currentStart = currentPeriodStart ?? periods[periods.length - 1]?.start;
@@ -575,8 +616,8 @@ function GroupTable({
       ) : (
         <div ref={vScrollRef} className="max-h-[520px] overflow-y-auto">
           <div className="flex items-start">
-            <div className="shrink-0" style={{ width: fixedW }}>
-              {rows.map((m) => {
+            <div ref={rowStackRef} className="shrink-0" style={{ width: fixedW }}>
+              {orderedRows.map((m, idx) => {
                 const cells = cellsFor(m);
                 const vals = Object.values(cells).map((c) => c.value);
                 const avg = vals.length
@@ -593,6 +634,11 @@ function GroupTable({
                     className={cn(
                       "flex items-center border-b transition-colors",
                       hovered === m.id && "bg-muted/60",
+                      drag && idx === drag.from && "opacity-40",
+                      drag &&
+                        idx === drag.over &&
+                        idx !== drag.from &&
+                        "shadow-[inset_0_2px_0_0_#f05100]",
                     )}
                     style={{ height: ROW_H }}
                   >
@@ -601,12 +647,56 @@ function GroupTable({
                         className="flex justify-center"
                         style={{ width: cols.check }}
                       >
-                        <Checkbox
-                          checked={checked[m.id] ?? false}
-                          onCheckedChange={(v) =>
-                            setChecked({ [m.id]: v === true })
-                          }
-                        />
+                        {reorder ? (
+                          <button
+                            type="button"
+                            title="Drag to reorder"
+                            onPointerDown={(e) => {
+                              e.preventDefault();
+                              e.currentTarget.setPointerCapture(e.pointerId);
+                              setDrag({ from: idx, over: idx });
+                            }}
+                            onPointerMove={(e) => {
+                              if (!drag) return;
+                              const top =
+                                rowStackRef.current?.getBoundingClientRect()
+                                  .top ?? 0;
+                              const over = Math.min(
+                                orderedRows.length - 1,
+                                Math.max(
+                                  0,
+                                  Math.floor((e.clientY - top) / ROW_H),
+                                ),
+                              );
+                              if (over !== drag.over)
+                                setDrag({ ...drag, over });
+                            }}
+                            onPointerUp={() => {
+                              if (!drag) return;
+                              const d = drag;
+                              setDrag(null);
+                              commitOrder(d.from, d.over);
+                            }}
+                            onPointerCancel={() => setDrag(null)}
+                            className={cn(
+                              buttonVariants({
+                                variant: "ghost",
+                                size: "icon",
+                              }),
+                              "size-7 cursor-grab touch-none text-[#f05100] active:cursor-grabbing",
+                              movePending && "opacity-40",
+                            )}
+                          >
+                            <GripVertical className="size-4" />
+                          </button>
+                        ) : (
+                          <Checkbox
+                            checked={checked[m.id] ?? false}
+                            onCheckedChange={(v) =>
+                              setChecked({ [m.id]: v === true })
+                            }
+                          />
+                        )}
                       </div>
                     ) : null}
                     {cols.trend ? (
@@ -730,7 +820,7 @@ function GroupTable({
               className="min-w-0 flex-1 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
             >
               <div style={{ width: rightW }}>
-                {rows.map((m) => {
+                {orderedRows.map((m) => {
                   const cells = cellsFor(m);
                   return (
                     <div
@@ -849,6 +939,7 @@ export function ScorecardView({
   const [dialogMetric, setDialogMetric] = useState<MetricRow | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [addExistingOpen, setAddExistingOpen] = useState(false);
+  const [reorder, setReorder] = useState(false);
 
   const groups = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -893,6 +984,21 @@ export function ScorecardView({
           onClick={newGroup}
         >
           <Plus className="size-3.5" /> New group
+        </Button>
+        <Button
+          variant="outline"
+          size="sm"
+          className={cn(
+            "hidden gap-1 sm:inline-flex",
+            reorder
+              ? "border-[#f05100]/60 bg-[#f05100]/10 text-[#f05100] hover:bg-[#f05100]/15 hover:text-[#f05100]"
+              : "text-[#f05100] hover:text-[#f05100]",
+          )}
+          onClick={() => setReorder((r) => !r)}
+          title="Show a drag handle on each row — press and drag to reorder"
+        >
+          <ArrowUpDown className="size-3.5" />
+          {reorder ? "Done reordering" : "Reorder"}
         </Button>
         <Tooltip>
           <TooltipTrigger
@@ -1026,6 +1132,9 @@ export function ScorecardView({
                   setDialogGroup(m.group_name);
                   setDialogOpen(true);
                 }}
+                // moving relative to hidden neighbours would look random —
+                // arrows only when the list isn't search-filtered
+                reorder={reorder && !query.trim()}
               />
             ) : null}
           </div>

@@ -371,6 +371,59 @@ export async function moveMetric(metricId: string, direction: "up" | "down") {
   }
 }
 
+/** Persist a drag-and-drop order for the dragged metric's group. Validates
+ *  the id list is exactly the group's current membership, then rewrites seq
+ *  two-phase (park on negatives, then finals) for the same unique-index
+ *  reason as moveMetric. */
+export async function reorderMetrics(metricId: string, orderedIds: string[]) {
+  const user = await getSessionUser();
+  if (!user) return { ok: false as const, error: "Not signed in" };
+  try {
+    const [metric] = await sql`
+      select m.team_id, m.cadence, m.group_name
+      from l10.scorecard_metrics m
+      join l10.teams t on t.id = m.team_id
+      join core.businesses b on b.id = t.business_id
+      where m.id = ${metricId} and b.short_name = any(${user.companies})
+    `;
+    if (!metric) return { ok: false as const, error: "Metric not found" };
+
+    const rows = (await sql`
+      select id from l10.scorecard_metrics
+      where team_id = ${metric.team_id} and cadence = ${metric.cadence}
+        and active and group_name is not distinct from ${metric.group_name}
+    `) as { id: string }[];
+    const current = new Set(rows.map((r) => r.id));
+    const valid =
+      orderedIds.length === current.size &&
+      new Set(orderedIds).size === orderedIds.length &&
+      orderedIds.every((id) => current.has(id));
+    if (!valid)
+      return {
+        ok: false as const,
+        error: "The group changed underneath you — refresh and try again.",
+      };
+
+    for (let k = 0; k < orderedIds.length; k++)
+      await sql`
+        update l10.scorecard_metrics set seq = ${-(k + 1)}
+        where id = ${orderedIds[k]}
+      `;
+    for (let k = 0; k < orderedIds.length; k++)
+      await sql`
+        update l10.scorecard_metrics set seq = ${k + 1}
+        where id = ${orderedIds[k]}
+      `;
+    revalidatePath("/l10/scorecard");
+    return { ok: true as const };
+  } catch (e) {
+    return {
+      ok: false as const,
+      error: e instanceof Error ? e.message : "Reorder failed",
+    };
+  }
+}
+
 export async function archiveMetric(metricId: string) {
   const user = await getSessionUser();
   if (!user) return { ok: false as const, error: "Not signed in" };
