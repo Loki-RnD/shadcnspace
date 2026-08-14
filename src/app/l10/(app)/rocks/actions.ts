@@ -31,8 +31,17 @@ export interface RockInput {
   quarter: string;
   dueDate: string | null;
   isCompany: boolean;
+  /** 'quarter' = locked to the quarter window; 'elastic' = own start/end. */
+  periodMode?: "quarter" | "elastic";
+  startDate?: string | null;
   description?: string | null;
   status?: "on_track" | "off_track" | "done";
+}
+
+/** Quarter-locked rocks never carry their own start date. */
+function periodFields(input: RockInput) {
+  const mode = input.periodMode ?? "quarter";
+  return { mode, startDate: mode === "elastic" ? (input.startDate ?? null) : null };
 }
 
 export async function createRock(input: RockInput) {
@@ -40,10 +49,13 @@ export async function createRock(input: RockInput) {
     await assertTeamAccess(input.teamId);
     if (!input.title.trim())
       return { ok: false as const, error: "Title is required." };
+    const period = periodFields(input);
     await sql`
-      insert into l10.rocks (team_id, owner_id, quarter, title, due_date, is_company, description, status)
+      insert into l10.rocks (team_id, owner_id, quarter, title, due_date, is_company,
+                             period_mode, start_date, description, status)
       values (${input.teamId}, ${input.ownerId}, ${input.quarter},
               ${input.title.trim()}, ${input.dueDate}, ${input.isCompany},
+              ${period.mode}, ${period.startDate},
               ${input.description?.trim() || null}, ${input.status ?? "on_track"})
     `;
     revalidatePath("/l10/rocks");
@@ -58,11 +70,13 @@ export async function updateRock(input: RockInput & { rockId: string }) {
     await assertTeamAccess(input.teamId);
     if (!input.title.trim())
       return { ok: false as const, error: "Title is required." };
+    const period = periodFields(input);
     await sql`
       update l10.rocks set
         title = ${input.title.trim()}, owner_id = ${input.ownerId},
         quarter = ${input.quarter}, due_date = ${input.dueDate},
-        is_company = ${input.isCompany}
+        is_company = ${input.isCompany},
+        period_mode = ${period.mode}, start_date = ${period.startDate}
       where id = ${input.rockId} and team_id = ${input.teamId}
     `;
     revalidatePath("/l10/rocks");

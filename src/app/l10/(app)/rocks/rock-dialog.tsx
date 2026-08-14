@@ -42,6 +42,8 @@ export function RockDialog({
   const [quarter, setQuarter] = useState(defaultQuarter);
   const [dueDate, setDueDate] = useState("");
   const [isCompany, setIsCompany] = useState(false);
+  const [periodMode, setPeriodMode] = useState<"quarter" | "elastic">("quarter");
+  const [startDate, setStartDate] = useState("");
   const [pending, startTransition] = useTransition();
 
   useEffect(() => {
@@ -51,6 +53,8 @@ export function RockDialog({
     setQuarter(rock?.quarter ?? defaultQuarter);
     setDueDate(rock?.due_date?.slice(0, 10) ?? "");
     setIsCompany(rock?.is_company ?? false);
+    setPeriodMode(rock?.period_mode ?? "quarter");
+    setStartDate(rock?.start_date?.slice(0, 10) ?? "");
   }, [open, rock, defaultQuarter]);
 
   function submit() {
@@ -62,6 +66,8 @@ export function RockDialog({
         quarter,
         dueDate: dueDate || null,
         isCompany,
+        periodMode,
+        startDate: startDate || null,
       };
       const res = rock
         ? await updateRock({ ...base, rockId: rock.id })
@@ -126,9 +132,46 @@ export function RockDialog({
               </NativeSelect>
             </div>
           </div>
-          <div className="grid grid-cols-2 items-end gap-3">
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="rk-period">Period</Label>
+            <NativeSelect
+              id="rk-period"
+              value={periodMode}
+              onChange={(e) =>
+                setPeriodMode(e.target.value as "quarter" | "elastic")
+              }
+            >
+              <option value="quarter">Quarter-locked (measurable data)</option>
+              <option value="elastic">Elastic (milestone rock, own dates)</option>
+            </NativeSelect>
+            <p className="text-muted-foreground text-[11px]">
+              {periodMode === "quarter"
+                ? "Judged strictly on the quarter window — revenue, credit notes, metric tonnes and other measurable-data rocks."
+                : "Milestone rocks with their own start and end — time-to-complete measures from the start date below."}
+            </p>
+          </div>
+          <div
+            className={
+              periodMode === "elastic"
+                ? "grid grid-cols-2 gap-3"
+                : "grid grid-cols-2 items-end gap-3"
+            }
+          >
+            {periodMode === "elastic" ? (
+              <div className="flex flex-col gap-1.5">
+                <Label htmlFor="rk-start">Start date</Label>
+                <Input
+                  id="rk-start"
+                  type="date"
+                  value={startDate}
+                  onChange={(e) => setStartDate(e.target.value)}
+                />
+              </div>
+            ) : null}
             <div className="flex flex-col gap-1.5">
-              <Label htmlFor="rk-due">Due date</Label>
+              <Label htmlFor="rk-due">
+                {periodMode === "elastic" ? "End date" : "Due date"}
+              </Label>
               <Input
                 id="rk-due"
                 type="date"
@@ -136,14 +179,25 @@ export function RockDialog({
                 onChange={(e) => setDueDate(e.target.value)}
               />
             </div>
-            <label className="flex items-center gap-2 pb-2 text-sm">
+            {periodMode === "quarter" ? (
+              <label className="flex items-center gap-2 pb-2 text-sm">
+                <Checkbox
+                  checked={isCompany}
+                  onCheckedChange={(v) => setIsCompany(v === true)}
+                />
+                Company Rock
+              </label>
+            ) : null}
+          </div>
+          {periodMode === "elastic" ? (
+            <label className="flex items-center gap-2 text-sm">
               <Checkbox
                 checked={isCompany}
                 onCheckedChange={(v) => setIsCompany(v === true)}
               />
               Company Rock
             </label>
-          </div>
+          ) : null}
         </div>
 
         <DialogFooter>

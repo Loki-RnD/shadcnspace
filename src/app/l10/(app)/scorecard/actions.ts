@@ -319,6 +319,58 @@ export async function restoreMetric(metricId: string) {
   }
 }
 
+/** Move a measurable one slot up/down within its group. Rows sort by
+ *  (group_name, seq), so we reorder the group's id list and rewrite seq to
+ *  the display index — self-healing for duplicate/gappy seq values; other
+ *  groups are untouched. Boundary moves are a no-op. */
+export async function moveMetric(metricId: string, direction: "up" | "down") {
+  const user = await getSessionUser();
+  if (!user) return { ok: false as const, error: "Not signed in" };
+  try {
+    const [metric] = await sql`
+      select m.id, m.team_id, m.cadence, m.group_name
+      from l10.scorecard_metrics m
+      join l10.teams t on t.id = m.team_id
+      join core.businesses b on b.id = t.business_id
+      where m.id = ${metricId} and b.short_name = any(${user.companies})
+    `;
+    if (!metric) return { ok: false as const, error: "Metric not found" };
+
+    const rows = (await sql`
+      select id, seq from l10.scorecard_metrics
+      where team_id = ${metric.team_id} and cadence = ${metric.cadence}
+        and active and group_name is not distinct from ${metric.group_name}
+      order by seq, id
+    `) as { id: string; seq: number }[];
+
+    const i = rows.findIndex((r) => r.id === metricId);
+    const j = direction === "up" ? i - 1 : i + 1;
+    if (i < 0) return { ok: false as const, error: "Metric not found" };
+    if (j < 0 || j >= rows.length) return { ok: true as const }; // at edge
+
+    const order = rows.map((r) => r.id);
+    [order[i], order[j]] = [order[j], order[i]];
+    const seqById = new Map(rows.map((r) => [r.id, Number(r.seq)]));
+    // Two-phase rewrite: the (team_id, cadence, seq) unique index rejects any
+    // single-row update landing on a neighbour's current seq, so park changed
+    // rows on negative seqs first, then write the final values.
+    const changed = order
+      .map((id, k) => ({ id, seq: k + 1 }))
+      .filter(({ id, seq }) => seqById.get(id) !== seq);
+    for (const { id, seq } of changed)
+      await sql`update l10.scorecard_metrics set seq = ${-seq} where id = ${id}`;
+    for (const { id, seq } of changed)
+      await sql`update l10.scorecard_metrics set seq = ${seq} where id = ${id}`;
+    revalidatePath("/l10/scorecard");
+    return { ok: true as const };
+  } catch (e) {
+    return {
+      ok: false as const,
+      error: e instanceof Error ? e.message : "Move failed",
+    };
+  }
+}
+
 export async function archiveMetric(metricId: string) {
   const user = await getSessionUser();
   if (!user) return { ok: false as const, error: "Not signed in" };

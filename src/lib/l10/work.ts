@@ -18,6 +18,10 @@ export interface RockRow {
   quarter: string;
   status: "on_track" | "off_track" | "done";
   pct: number | null;
+  /** 'quarter' = locked to the l10.quarter_periods window (measurable-data
+   *  rocks); 'elastic' = milestone rocks with their own start/end dates. */
+  period_mode: "quarter" | "elastic";
+  start_date: string | null; // elastic rocks only
   due_date: string | null;
   is_company: boolean;
   owner_id: string | null;
@@ -61,7 +65,8 @@ export async function listRocks(
   const quarter = currentQuarter();
   const rows = await sql`
     select
-      r.id, r.title, r.quarter, r.status, r.pct,
+      r.id, r.title, r.quarter, r.status, r.pct, r.period_mode,
+      to_char(r.start_date, 'YYYY-MM-DD') as start_date,
       to_char(r.due_date, 'YYYY-MM-DD') as due_date, r.is_company,
       r.owner_id, o.full_name as owner_name,
       coalesce((
