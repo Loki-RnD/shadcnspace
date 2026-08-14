@@ -3,6 +3,8 @@ import { ShieldAlert } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { getSessionUser } from "@/lib/l10/auth/session";
 import { listOrg, listUsers } from "@/lib/l10/identity";
+import { listQuarterPeriods } from "@/lib/l10/rock-trends";
+import { QuarterPeriodsCard } from "./quarter-periods-card";
 import { UsersTable } from "./users-table";
 
 export const dynamic = "force-dynamic";
@@ -20,7 +22,11 @@ export default async function AdminPage() {
     );
   }
 
-  const [users, org] = await Promise.all([listUsers(), listOrg()]);
+  const [users, org, quarterPeriods] = await Promise.all([
+    listUsers(),
+    listOrg(),
+    listQuarterPeriods(),
+  ]);
 
   return (
     <div className="grid grid-cols-12 gap-6">
@@ -36,6 +42,12 @@ export default async function AdminPage() {
       <Card className="col-span-12">
         <CardContent>
           <UsersTable users={users} org={org} />
+        </CardContent>
+      </Card>
+
+      <Card className="col-span-12 xl:col-span-7">
+        <CardContent>
+          <QuarterPeriodsCard periods={quarterPeriods} />
         </CardContent>
       </Card>
     </div>

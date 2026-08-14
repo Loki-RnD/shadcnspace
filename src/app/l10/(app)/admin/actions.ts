@@ -223,3 +223,67 @@ export async function deleteUser(userId: string) {
   revalidatePath("/l10/admin");
   return { ok: true as const };
 }
+
+// ── Quarter periods ──────────────────────────────────────────────────────────
+// Editable windows in l10.quarter_periods. Rocks time-to-complete metrics
+// read these on every load, so edits recompute trends immediately.
+
+const QUARTER_KEY_RE = /^(Q[1-4]|FY)-\d{4}$/;
+
+export async function saveQuarterPeriod(input: {
+  quarter: string;
+  startDate: string; // yyyy-mm-dd
+  endDate: string;
+}) {
+  try {
+    await assertSuperAdmin();
+    const quarter = input.quarter.trim().toUpperCase();
+    if (!QUARTER_KEY_RE.test(quarter)) {
+      return {
+        ok: false as const,
+        error: "Quarter must look like Q3-2026 or FY-2026.",
+      };
+    }
+    if (!input.startDate || !input.endDate || input.startDate >= input.endDate) {
+      return { ok: false as const, error: "Start date must be before end date." };
+    }
+    await sql`
+      insert into l10.quarter_periods (quarter, start_date, end_date)
+      values (${quarter}, ${input.startDate}, ${input.endDate})
+      on conflict (quarter) do update
+        set start_date = excluded.start_date, end_date = excluded.end_date
+    `;
+    revalidatePath("/l10/admin");
+    revalidatePath("/l10/rocks");
+    return { ok: true as const };
+  } catch (e) {
+    return {
+      ok: false as const,
+      error: e instanceof Error ? e.message : "Request failed",
+    };
+  }
+}
+
+export async function deleteQuarterPeriod(quarter: string) {
+  try {
+    await assertSuperAdmin();
+    const [{ n }] = (await sql`
+      select count(*)::int as n from l10.rocks where quarter = ${quarter}
+    `) as [{ n: number }];
+    if (n > 0) {
+      return {
+        ok: false as const,
+        error: `${n} rock${n === 1 ? "" : "s"} reference ${quarter} — its window falls back to the calendar quarter if deleted. Remove those rocks first.`,
+      };
+    }
+    await sql`delete from l10.quarter_periods where quarter = ${quarter}`;
+    revalidatePath("/l10/admin");
+    revalidatePath("/l10/rocks");
+    return { ok: true as const };
+  } catch (e) {
+    return {
+      ok: false as const,
+      error: e instanceof Error ? e.message : "Request failed",
+    };
+  }
+}

@@ -249,6 +249,13 @@ export function RockTrendsView({
             {teamAvg
               ? ` · avg ${teamAvg.weeks.toFixed(1)} wks to complete (${teamAvg.n} tracked)`
               : ""}
+            {" · "}
+            <a
+              href="/l10/admin"
+              className="underline underline-offset-2 hover:text-[#f05100]"
+            >
+              edit quarter periods
+            </a>
           </p>
           <div className="grid grid-cols-3 divide-x">
             {banner.map(({ label, n, icon: Icon, cls }) => (
