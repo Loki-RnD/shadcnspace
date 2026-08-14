@@ -12,7 +12,11 @@ import { cn } from "@/lib/utils";
 import { PageHeader } from "@/components/l10/page-header";
 import { getSessionUser } from "@/lib/l10/auth/session";
 import { listTeamMembers, listTeamsForCompanies } from "@/lib/l10/scorecard";
-import { listQuarterPeriods, listRockTrends } from "@/lib/l10/rock-trends";
+import {
+  listQuarterPeriods,
+  listRockStatusEvents,
+  listRockTrends,
+} from "@/lib/l10/rock-trends";
 import { currentQuarter, listRocks } from "@/lib/l10/work";
 import { RocksView } from "./rocks-view";
 import { RockTrendsView } from "./trends-view";
@@ -55,12 +59,14 @@ export default async function RocksPage({
   const isTrends = params.view === "trends";
   const archived = !isTrends && params.tab === "archive";
 
-  const [rocks, members, trendRocks, quarterPeriods] = await Promise.all([
-    isTrends ? [] : listRocks(team.id, { archived }),
-    listTeamMembers(team.id),
-    isTrends ? listRockTrends(team.id) : [],
-    isTrends ? listQuarterPeriods() : [],
-  ]);
+  const [rocks, members, trendRocks, quarterPeriods, statusEvents] =
+    await Promise.all([
+      isTrends ? [] : listRocks(team.id, { archived }),
+      listTeamMembers(team.id),
+      isTrends ? listRockTrends(team.id) : [],
+      isTrends ? listQuarterPeriods() : [],
+      isTrends ? listRockStatusEvents(team.id) : [],
+    ]);
 
   return (
     <>
@@ -150,6 +156,7 @@ export default async function RocksPage({
         <RockTrendsView
           rocks={trendRocks}
           periods={quarterPeriods}
+          events={statusEvents}
           currentQuarter={currentQuarter()}
         />
       ) : (

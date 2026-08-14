@@ -14,12 +14,25 @@ import {
 import { cn } from "@/lib/utils";
 import { Card, CardContent } from "@/components/ui/card";
 import { ChartContainer, type ChartConfig } from "@/components/ui/chart";
-import type { QuarterPeriod, RockTrendRow } from "@/lib/l10/rock-trends";
+import type {
+  QuarterPeriod,
+  RockStatusEvent,
+  RockTrendRow,
+} from "@/lib/l10/rock-trends";
 
 const ORANGE = "#f05100";
+const EMERALD = "#10b981";
+const RED = "#ef4444";
+const SKY = "#0ea5e9";
 
 const chartConfig = {
   pct: { label: "Completed", color: ORANGE },
+} satisfies ChartConfig;
+
+const intraConfig = {
+  on: { label: "On-track", color: EMERALD },
+  off: { label: "Off-track", color: RED },
+  done: { label: "Done", color: SKY },
 } satisfies ChartConfig;
 
 const QUARTER_RE = /^Q([1-4])-(\d{4})$/;
@@ -76,6 +89,85 @@ function weeksToComplete(
   if (done.getTime() < start.getTime() || done.getTime() > end.getTime() + grace)
     return null;
   return (done.getTime() - start.getTime()) / (7 * 86400e3);
+}
+
+const MONTHS = [
+  "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+  "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
+];
+
+/** Weekly point-in-time status mix for the current quarter, reconstructed
+ *  from the status-change log: at each sample point a rock's status is its
+ *  latest event at or before that moment. The series starts at the first
+ *  event (the 0013 baseline seed) — earlier weeks are genuinely unknown —
+ *  and grows as the quarter progresses. */
+function intraQuarterSeries(
+  rocks: RockTrendRow[],
+  events: RockStatusEvent[],
+  win: { start: Date; end: Date } | null,
+) {
+  if (!win) return [];
+  const rockIds = new Set(rocks.map((r) => r.id));
+  const byRock = new Map<string, { t: number; status: string }[]>();
+  for (const e of events) {
+    if (!rockIds.has(e.rock_id)) continue;
+    const arr = byRock.get(e.rock_id) ?? [];
+    arr.push({ t: new Date(e.changed_at).getTime(), status: e.status });
+    byRock.set(e.rock_id, arr);
+  }
+  if (byRock.size === 0) return [];
+  const firstEvent = Math.min(
+    ...[...byRock.values()].map((a) => a[0].t),
+  );
+  const now = Date.now();
+  const endMs = Math.min(now, win.end.getTime() + 86400e3);
+
+  const points: { t: number; label: string }[] = [];
+  const d = new Date(win.start);
+  d.setUTCDate(d.getUTCDate() - ((d.getUTCDay() + 6) % 7)); // Monday ≤ start
+  for (; d.getTime() <= endMs; d.setUTCDate(d.getUTCDate() + 7)) {
+    if (d.getTime() < firstEvent) continue;
+    points.push({
+      t: d.getTime(),
+      label: `${MONTHS[d.getUTCMonth()]} ${d.getUTCDate()}`,
+    });
+  }
+  if (
+    points.length === 0 ||
+    now - points[points.length - 1].t > 12 * 3600e3
+  )
+    points.push({ t: now, label: "Now" });
+
+  return points
+    .map((p) => {
+      let on = 0;
+      let off = 0;
+      let done = 0;
+      for (const arr of byRock.values()) {
+        let latest: string | null = null;
+        for (const e of arr) {
+          if (e.t <= p.t) latest = e.status;
+          else break;
+        }
+        if (!latest) continue; // rock not yet tracked at this point
+        if (latest === "on_track") on++;
+        else if (latest === "off_track") off++;
+        else done++;
+      }
+      const total = on + off + done;
+      const pct = (n: number) => (total === 0 ? 0 : (n / total) * 100);
+      return {
+        label: p.label,
+        total,
+        onN: on,
+        offN: off,
+        doneN: done,
+        on: pct(on),
+        off: pct(off),
+        done: pct(done),
+      };
+    })
+    .filter((p) => p.total > 0);
 }
 
 interface OwnerGroup {
@@ -149,10 +241,12 @@ function initials(name: string) {
 export function RockTrendsView({
   rocks,
   periods,
+  events,
   currentQuarter,
 }: {
   rocks: RockTrendRow[];
   periods: QuarterPeriod[];
+  events: RockStatusEvent[];
   currentQuarter: string;
 }) {
   const quarters = useMemo(
@@ -192,6 +286,16 @@ export function RockTrendsView({
   const teamAvg = useMemo(() => avgWeeksFor(rocks), [rocks, periods]);
 
   const current = rocks.filter((r) => r.quarter === currentQuarter);
+  const intraSeries = useMemo(
+    () =>
+      intraQuarterSeries(
+        current,
+        events,
+        quarterWindow(currentQuarter, periods),
+      ),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [rocks, events, periods, currentQuarter],
+  );
   const counts = {
     on: current.filter((r) => r.status === "on_track").length,
     off: current.filter((r) => r.status === "off_track").length,
@@ -300,6 +404,65 @@ export function RockTrendsView({
           </p>
         )}
       </div>
+
+      {/* Intra-quarter status trend — grows weekly from the status log */}
+      {intraSeries.length > 0 ? (
+        <div className="bg-card mb-6 rounded-xl border p-4">
+          <p className="mb-1 text-sm font-semibold">
+            {currentQuarter} status over time
+          </p>
+          <p className="text-muted-foreground mb-2 text-xs">
+            Weekly point-in-time status mix, reconstructed from the rock
+            status-change log. Tracking began {intraSeries[0].label} — the line
+            fills in as the quarter progresses.
+          </p>
+          <ChartContainer config={intraConfig} className="h-44 w-full aspect-auto">
+            <LineChart
+              data={intraSeries}
+              margin={{ top: 6, right: 8, bottom: 0, left: -22 }}
+            >
+              <XAxis dataKey="label" tick={{ fontSize: 9 }} />
+              <YAxis
+                domain={[0, 100]}
+                tick={{ fontSize: 9 }}
+                tickFormatter={(v) => `${v}%`}
+              />
+              <RechartsTooltip
+                content={({ active, payload, label }) => {
+                  if (!active || !payload?.length) return null;
+                  const p = payload[0]?.payload as (typeof intraSeries)[number];
+                  return (
+                    <div className="bg-popover rounded-md border p-2 text-[11px] shadow-md">
+                      <p className="font-medium">{label}</p>
+                      <p>
+                        {p.onN} on-track · {p.offN} off-track · {p.doneN} done
+                        ({p.total} rocks)
+                      </p>
+                    </div>
+                  );
+                }}
+              />
+              <Line dataKey="on" stroke={EMERALD} strokeWidth={2} dot={{ r: 2.5 }} />
+              <Line dataKey="off" stroke={RED} strokeWidth={2} dot={{ r: 2.5 }} />
+              <Line dataKey="done" stroke={SKY} strokeWidth={2} dot={{ r: 2.5 }} />
+            </LineChart>
+          </ChartContainer>
+          <div className="text-muted-foreground mt-2 flex items-center justify-center gap-4 text-[10px]">
+            <span className="flex items-center gap-1">
+              <span className="inline-block w-4 border-t-2 border-[#10b981]" />
+              On-track
+            </span>
+            <span className="flex items-center gap-1">
+              <span className="inline-block w-4 border-t-2 border-[#ef4444]" />
+              Off-track
+            </span>
+            <span className="flex items-center gap-1">
+              <span className="inline-block w-4 border-t-2 border-[#0ea5e9]" />
+              Done
+            </span>
+          </div>
+        </div>
+      ) : null}
 
       {/* One card per HOD */}
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">

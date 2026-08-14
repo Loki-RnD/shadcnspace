@@ -26,6 +26,12 @@ export interface QuarterPeriod {
   end_date: string;
 }
 
+export interface RockStatusEvent {
+  rock_id: string;
+  status: "on_track" | "off_track" | "done";
+  changed_at: string; // ISO timestamp
+}
+
 export async function listRockTrends(teamId: string): Promise<RockTrendRow[]> {
   const rows = await sql`
     select
@@ -51,4 +57,20 @@ export async function listQuarterPeriods(): Promise<QuarterPeriod[]> {
     order by start_date
   `;
   return rows as QuarterPeriod[];
+}
+
+/** Status-change log for a team's rocks (baseline-seeded by migration 0013,
+ *  appended by setRockStatus). Powers the intra-quarter on-track trend. */
+export async function listRockStatusEvents(
+  teamId: string,
+): Promise<RockStatusEvent[]> {
+  const rows = await sql`
+    select e.rock_id, e.status,
+      to_char(e.changed_at at time zone 'utc', 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as changed_at
+    from l10.rock_status_events e
+    join l10.rocks r on r.id = e.rock_id
+    where r.team_id = ${teamId}
+    order by e.changed_at
+  `;
+  return rows as RockStatusEvent[];
 }
