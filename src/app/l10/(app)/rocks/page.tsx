@@ -12,8 +12,10 @@ import { cn } from "@/lib/utils";
 import { PageHeader } from "@/components/l10/page-header";
 import { getSessionUser } from "@/lib/l10/auth/session";
 import { listTeamMembers, listTeamsForCompanies } from "@/lib/l10/scorecard";
+import { listQuarterPeriods, listRockTrends } from "@/lib/l10/rock-trends";
 import { currentQuarter, listRocks } from "@/lib/l10/work";
 import { RocksView } from "./rocks-view";
+import { RockTrendsView } from "./trends-view";
 
 export const dynamic = "force-dynamic";
 
@@ -32,7 +34,7 @@ function quarterOptions(): string[] {
 export default async function RocksPage({
   searchParams,
 }: {
-  searchParams: Promise<{ team?: string; tab?: string }>;
+  searchParams: Promise<{ team?: string; tab?: string; view?: string }>;
 }) {
   const user = await getSessionUser();
   if (!user) return null;
@@ -50,11 +52,14 @@ export default async function RocksPage({
 
   const params = await searchParams;
   const team = teams.find((t) => t.id === params.team) ?? teams[0];
-  const archived = params.tab === "archive";
+  const isTrends = params.view === "trends";
+  const archived = !isTrends && params.tab === "archive";
 
-  const [rocks, members] = await Promise.all([
-    listRocks(team.id, { archived }),
+  const [rocks, members, trendRocks, quarterPeriods] = await Promise.all([
+    isTrends ? [] : listRocks(team.id, { archived }),
     listTeamMembers(team.id),
+    isTrends ? listRockTrends(team.id) : [],
+    isTrends ? listQuarterPeriods() : [],
   ]);
 
   return (
@@ -64,13 +69,24 @@ export default async function RocksPage({
         description="Set and track quarterly goals to help your team consistently hit their targets."
       />
 
-      {/* Tabs — List | Planning Board | Archive */}
+      {/* Tabs — Trends | List | Planning Board | Archive */}
       <div className="mb-4 flex items-center gap-6 border-b">
+        <Link
+          href={`/l10/rocks?team=${team.id}&view=trends`}
+          className={cn(
+            "-mb-px border-b-2 pb-2 text-sm transition-colors",
+            isTrends
+              ? "border-[#f05100] font-semibold text-[#f05100]"
+              : "text-muted-foreground hover:text-foreground border-transparent",
+          )}
+        >
+          Trends
+        </Link>
         <Link
           href={`/l10/rocks?team=${team.id}`}
           className={cn(
             "-mb-px border-b-2 pb-2 text-sm transition-colors",
-            !archived
+            !isTrends && !archived
               ? "border-[#f05100] font-semibold text-[#f05100]"
               : "text-muted-foreground hover:text-foreground border-transparent",
           )}
@@ -109,7 +125,7 @@ export default async function RocksPage({
                 key={t.id}
                 render={
                   <Link
-                    href={`/l10/rocks?team=${t.id}${archived ? "&tab=archive" : ""}`}
+                    href={`/l10/rocks?team=${t.id}${archived ? "&tab=archive" : ""}${isTrends ? "&view=trends" : ""}`}
                   />
                 }
               >
@@ -121,19 +137,31 @@ export default async function RocksPage({
         <div className="text-muted-foreground flex items-center gap-1 rounded-full border px-3 py-1.5 text-xs">
           Quarter:{" "}
           <span className="text-foreground font-medium">
-            {archived ? "Past quarters" : currentQuarter()}
+            {isTrends
+              ? "All quarters"
+              : archived
+                ? "Past quarters"
+                : currentQuarter()}
           </span>
         </div>
       </div>
 
-      <RocksView
-        teamId={team.id}
-        rocks={rocks}
-        members={members}
-        quarters={quarterOptions()}
-        defaultQuarter={currentQuarter()}
-        archived={archived}
-      />
+      {isTrends ? (
+        <RockTrendsView
+          rocks={trendRocks}
+          periods={quarterPeriods}
+          currentQuarter={currentQuarter()}
+        />
+      ) : (
+        <RocksView
+          teamId={team.id}
+          rocks={rocks}
+          members={members}
+          quarters={quarterOptions()}
+          defaultQuarter={currentQuarter()}
+          archived={archived}
+        />
+      )}
     </>
   );
 }

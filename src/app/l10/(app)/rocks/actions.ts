@@ -78,11 +78,24 @@ export async function setRockStatus(
   status: "on_track" | "off_track" | "done",
 ) {
   try {
-    await assertTeamAccess(teamId);
-    await sql`
-      update l10.rocks set status = ${status}
+    const user = await assertTeamAccess(teamId);
+    // completed_at powers time-to-complete metrics; the status-events log
+    // powers intra-quarter trend lines. Only real transitions are recorded.
+    const changed = await sql`
+      update l10.rocks set
+        status = ${status},
+        completed_at = case when ${status} = 'done'
+          then coalesce(completed_at, now()) else null end
       where id = ${rockId} and team_id = ${teamId}
+        and status is distinct from ${status}
+      returning id
     `;
+    if (changed.length > 0) {
+      await sql`
+        insert into l10.rock_status_events (rock_id, status, changed_by)
+        values (${rockId}, ${status}, ${user.id})
+      `;
+    }
     revalidatePath("/l10/rocks");
     return { ok: true as const };
   } catch (e) {
