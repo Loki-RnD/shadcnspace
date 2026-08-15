@@ -19,6 +19,23 @@ export function L10Nav({ isSuperAdmin }: { isSuperAdmin: boolean }) {
               item.href === "/l10"
                 ? pathname === "/l10"
                 : pathname.startsWith(item.href);
+            if (item.comingSoon) {
+              return (
+                <li key={item.href} className="shrink-0">
+                  <span
+                    aria-disabled="true"
+                    title="Coming soon"
+                    className="text-muted-foreground/60 flex cursor-not-allowed items-center gap-2 rounded-md px-3 py-2 text-sm font-medium whitespace-nowrap capitalize select-none"
+                  >
+                    <item.icon className="size-4" />
+                    {item.title}
+                    <span className="border-border text-muted-foreground rounded-full border px-1.5 py-0.5 text-[10px] font-semibold tracking-wide uppercase">
+                      Soon
+                    </span>
+                  </span>
+                </li>
+              );
+            }
             return (
               <li key={item.href} className="shrink-0">
                 <Link

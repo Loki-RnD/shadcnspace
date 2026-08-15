@@ -17,6 +17,8 @@ export interface L10NavItem {
   description: string;
   /** only shown to system_role = super_admin */
   adminOnly?: boolean;
+  /** rendered greyed-out and non-clickable with a "Soon" badge */
+  comingSoon?: boolean;
 }
 
 export const l10NavItems: L10NavItem[] = [
@@ -55,6 +57,7 @@ export const l10NavItems: L10NavItem[] = [
     href: "/l10/meeting",
     icon: Presentation,
     description: "Run the Level 10",
+    comingSoon: true,
   },
   {
     title: "Admin",
