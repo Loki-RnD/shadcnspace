@@ -17,6 +17,7 @@ import {
   listRockStatusEvents,
   listRockTrends,
 } from "@/lib/l10/rock-trends";
+import { nowNairobi } from "@/lib/l10/time";
 import { currentQuarter, listRocks } from "@/lib/l10/work";
 import { RocksView } from "./rocks-view";
 import { RockTrendsView } from "./trends-view";
@@ -24,7 +25,7 @@ import { RockTrendsView } from "./trends-view";
 export const dynamic = "force-dynamic";
 
 function quarterOptions(): string[] {
-  const now = new Date();
+  const now = nowNairobi();
   const out: string[] = [];
   for (let i = -1; i <= 2; i++) {
     const d = new Date(

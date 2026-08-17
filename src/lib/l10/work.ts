@@ -1,6 +1,7 @@
 import "server-only";
 
 import { sql } from "./db";
+import { nowNairobi } from "./time";
 
 // Data access for Rocks, To-Dos and Issues (l10.* on Neon).
 
@@ -54,7 +55,7 @@ export interface IssueRow {
 }
 
 /** e.g. 'Q3-2026' — matches the seed convention in l10.rocks.quarter */
-export function currentQuarter(today = new Date()): string {
+export function currentQuarter(today = nowNairobi()): string {
   return `Q${Math.floor(today.getUTCMonth() / 3) + 1}-${today.getUTCFullYear()}`;
 }
 

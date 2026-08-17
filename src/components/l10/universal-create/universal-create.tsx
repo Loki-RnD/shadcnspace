@@ -36,6 +36,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Switch } from "@/components/ui/switch";
 import { cn } from "@/lib/utils";
+import { nowNairobi } from "@/lib/l10/time";
 import { memberVisuals } from "@/components/l10/members";
 import type { MemberRow, TeamRow } from "@/lib/l10/scorecard";
 import type { SessionUser } from "@/lib/l10/auth/token";
@@ -62,13 +63,13 @@ function iso(d: Date): string {
 }
 
 function plusDays(days: number): string {
-  const d = new Date();
+  const d = nowNairobi();
   d.setUTCDate(d.getUTCDate() + days);
   return iso(d);
 }
 
 function quarterOptions(): string[] {
-  const now = new Date();
+  const now = nowNairobi();
   const out: string[] = [];
   for (let i = -1; i <= 2; i++) {
     const d = new Date(
@@ -80,7 +81,7 @@ function quarterOptions(): string[] {
 }
 
 function currentQuarter(): string {
-  const now = new Date();
+  const now = nowNairobi();
   return `Q${Math.floor(now.getUTCMonth() / 3) + 1}-${now.getUTCFullYear()}`;
 }
 

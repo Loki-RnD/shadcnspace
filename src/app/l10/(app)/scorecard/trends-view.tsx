@@ -20,6 +20,7 @@ import {
 } from "recharts";
 
 import { cn } from "@/lib/utils";
+import { todayNairobiIso } from "@/lib/l10/time";
 import { Card, CardContent } from "@/components/ui/card";
 import { ChartContainer, type ChartConfig } from "@/components/ui/chart";
 import {
@@ -256,7 +257,7 @@ export function TrendsView({
 
   // Judge only completed periods — the in-progress week/month/quarter is a
   // partial value against a full-period goal and would read as a miss.
-  const todayIso = new Date().toISOString().slice(0, 10);
+  const todayIso = todayNairobiIso();
   const withStatus = useMemo(
     () =>
       metrics.map((m) => ({

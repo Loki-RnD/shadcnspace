@@ -84,7 +84,8 @@ export interface SeriesPoint {
 
 /** Time series bucketed to fit the window: hours (≤48h), days (≤93d), months.
  *  Each bucket size is its own statement — date_trunc's unit cannot be a bind
- *  parameter without breaking GROUP BY expression matching. */
+ *  parameter without breaking GROUP BY expression matching. Buckets and labels
+ *  are Nairobi wall-clock (EAT) — created_at is stored UTC. */
 export async function getSeries(hours: number | null): Promise<SeriesPoint[]> {
   const h = hours ?? LIFETIME_HOURS;
   const unit = h <= 48 ? "hour" : h <= 2232 ? "day" : "month";
@@ -92,34 +93,34 @@ export async function getSeries(hours: number | null): Promise<SeriesPoint[]> {
     unit === "hour"
       ? await sql`
           select
-            to_char(date_trunc('hour', created_at), 'HH24:00')      as bucket,
+            to_char(date_trunc('hour', created_at at time zone 'Africa/Nairobi'), 'HH24:00') as bucket,
             count(*) filter (where event_type = 'pageview')::int    as pageviews,
             count(distinct user_id)::int                            as visitors
           from l10.analytics_events
           where created_at > now() - make_interval(hours => ${h})
-          group by date_trunc('hour', created_at)
-          order by date_trunc('hour', created_at)
+          group by date_trunc('hour', created_at at time zone 'Africa/Nairobi')
+          order by date_trunc('hour', created_at at time zone 'Africa/Nairobi')
         `
       : unit === "day"
         ? await sql`
             select
-              to_char(date_trunc('day', created_at), 'Mon DD')        as bucket,
+              to_char(date_trunc('day', created_at at time zone 'Africa/Nairobi'), 'Mon DD') as bucket,
               count(*) filter (where event_type = 'pageview')::int    as pageviews,
               count(distinct user_id)::int                            as visitors
             from l10.analytics_events
             where created_at > now() - make_interval(hours => ${h})
-            group by date_trunc('day', created_at)
-            order by date_trunc('day', created_at)
+            group by date_trunc('day', created_at at time zone 'Africa/Nairobi')
+            order by date_trunc('day', created_at at time zone 'Africa/Nairobi')
           `
         : await sql`
             select
-              to_char(date_trunc('month', created_at), 'Mon YYYY')    as bucket,
+              to_char(date_trunc('month', created_at at time zone 'Africa/Nairobi'), 'Mon YYYY') as bucket,
               count(*) filter (where event_type = 'pageview')::int    as pageviews,
               count(distinct user_id)::int                            as visitors
             from l10.analytics_events
             where created_at > now() - make_interval(hours => ${h})
-            group by date_trunc('month', created_at)
-            order by date_trunc('month', created_at)
+            group by date_trunc('month', created_at at time zone 'Africa/Nairobi')
+            order by date_trunc('month', created_at at time zone 'Africa/Nairobi')
           `;
   return rows as SeriesPoint[];
 }
@@ -170,18 +171,24 @@ export interface ModuleUsage {
   previous: number;
 }
 
-/** Pageviews per app module — this month vs previous month (radar chart). */
+/** Pageviews per app module — this month vs previous month (radar chart).
+ *  Month boundaries are Nairobi calendar months, not UTC. */
 export async function getModuleUsage(): Promise<ModuleUsage[]> {
   const rows = await sql`
+    with bounds as (
+      select
+        date_trunc('month', now() at time zone 'Africa/Nairobi') as cur_start
+    )
     select
       initcap(coalesce(nullif(split_part(path, '/', 3), ''), 'dashboard')) as module,
-      count(*) filter (where created_at >= date_trunc('month', now()))::int as current,
       count(*) filter (
-        where created_at >= date_trunc('month', now()) - interval '1 month'
-          and created_at < date_trunc('month', now()))::int as previous
+        where created_at at time zone 'Africa/Nairobi' >= (select cur_start from bounds))::int as current,
+      count(*) filter (
+        where created_at at time zone 'Africa/Nairobi' >= (select cur_start from bounds) - interval '1 month'
+          and created_at at time zone 'Africa/Nairobi' < (select cur_start from bounds))::int as previous
     from l10.analytics_events
     where event_type = 'pageview'
-      and created_at >= date_trunc('month', now()) - interval '1 month'
+      and created_at at time zone 'Africa/Nairobi' >= (select cur_start from bounds) - interval '1 month'
     group by 1
     order by 2 desc
     limit 8
@@ -225,7 +232,7 @@ export async function getTopActions(hours: number | null): Promise<ActionUsage[]
       count(*)::int                 as clicks,
       count(distinct user_id)::int  as users,
       mode() within group (order by path) as top_path,
-      to_char(max(created_at), 'YYYY-MM-DD HH24:MI') as last_used
+      to_char(max(created_at) at time zone 'Africa/Nairobi', 'YYYY-MM-DD HH24:MI') as last_used
     from l10.analytics_events
     where event_type = 'action'
       and target is not null
@@ -258,7 +265,7 @@ export async function getErrorGroups(hours: number | null): Promise<ErrorGroup[]
       source,
       count(*)::int                as occurrences,
       count(distinct user_id)::int as affected_users,
-      to_char(max(created_at), 'YYYY-MM-DD HH24:MI') as last_seen
+      to_char(max(created_at) at time zone 'Africa/Nairobi', 'YYYY-MM-DD HH24:MI') as last_seen
     from l10.client_errors
     where created_at > now() - make_interval(hours => ${h})
     group by message, path, source
@@ -297,7 +304,7 @@ export async function getErrorGroupDetail(
   };
   const occurrences = await sql`
     select
-      to_char(e.created_at, 'YYYY-MM-DD HH24:MI') as seen_at,
+      to_char(e.created_at at time zone 'Africa/Nairobi', 'YYYY-MM-DD HH24:MI') as seen_at,
       u.full_name,
       e.user_agent,
       e.stack
@@ -330,7 +337,7 @@ export async function getUserActivity(hours: number | null): Promise<UserActivit
       u.system_role,
       count(e.id) filter (where e.event_type = 'pageview')::int as pageviews,
       count(e.id) filter (where e.event_type = 'action')::int   as actions,
-      to_char(max(e.created_at), 'YYYY-MM-DD HH24:MI')          as last_seen
+      to_char(max(e.created_at) at time zone 'Africa/Nairobi', 'YYYY-MM-DD HH24:MI') as last_seen
     from core.users u
     left join l10.analytics_events e
       on e.user_id = u.id
@@ -368,7 +375,7 @@ export async function getRatings(hours: number | null): Promise<RatingsData> {
     sql`
       select
         r.score::int as score, r.comment, r.path, u.full_name,
-        to_char(r.created_at, 'YYYY-MM-DD') as created_at
+        to_char(r.created_at at time zone 'Africa/Nairobi', 'YYYY-MM-DD') as created_at
       from l10.ux_ratings r
       join core.users u on u.id = r.user_id
       where r.created_at > now() - make_interval(hours => ${h})

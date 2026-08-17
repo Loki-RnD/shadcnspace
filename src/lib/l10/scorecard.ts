@@ -1,10 +1,12 @@
 import "server-only";
 
 import { sql } from "./db";
+import { nowNairobi } from "./time";
 
 // Weeks run Monday → Saturday to match the HOD workbook. Non-weekly cadences
 // (monthly/quarterly/annual) use calendar periods; all share scorecard_weeks
-// rows disambiguated by `cadence` (migration 0004).
+// rows disambiguated by `cadence` (migration 0004). "Today" is Nairobi
+// wall-clock (EAT) — the servers run UTC.
 
 export type Cadence = "weekly" | "monthly" | "quarterly" | "annual";
 
@@ -87,7 +89,7 @@ function md(d: Date): string {
 export function trailingPeriods(
   cadence: Cadence,
   count?: number,
-  today = new Date(),
+  today = nowNairobi(),
 ): PeriodWindow[] {
   const n =
     count ??
@@ -135,7 +137,7 @@ export interface MonthOption {
 }
 
 /** Recent calendar months, newest first (index 0 = current month). */
-export function monthOptions(count = 12, today = new Date()): MonthOption[] {
+export function monthOptions(count = 12, today = nowNairobi()): MonthOption[] {
   const out: MonthOption[] = [];
   for (let i = 0; i < count; i++) {
     const d = new Date(
@@ -272,7 +274,7 @@ export interface QuarterOption {
 }
 
 /** Recent calendar quarters, newest first (index 0 = current quarter). */
-export function quarterOptions(count = 6, today = new Date()): QuarterOption[] {
+export function quarterOptions(count = 6, today = nowNairobi()): QuarterOption[] {
   const out: QuarterOption[] = [];
   let y = today.getUTCFullYear();
   let q = Math.floor(today.getUTCMonth() / 3); // 0-based
@@ -344,7 +346,7 @@ export function quarterPeriods(quarterKeys: string[]): PeriodWindow[] {
 export function presetPeriods(
   cadence: Cadence,
   key: string,
-  today = new Date(),
+  today = nowNairobi(),
 ): PeriodWindow[] {
   const trailing = key.match(/^(\d+)[wmqy]$/);
   if (trailing)

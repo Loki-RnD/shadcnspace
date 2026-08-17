@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
+import { todayNairobiIso } from "@/lib/l10/time";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -203,7 +204,7 @@ export function TodosView({
     );
   }, [todos, query, ownerFilter, statusFilter, archived]);
 
-  const today = new Date().toISOString().slice(0, 10);
+  const today = todayNairobiIso();
 
   return (
     <div className="flex flex-col gap-4">
