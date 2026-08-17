@@ -141,7 +141,7 @@ export function invitationEmail(
             <tr>
               <td style="padding:40px 36px;text-align:center;font-family:${FONT}">
                 <img src="cid:${badgeCid}" alt="We run on EOS" width="120" style="display:block;margin:0 auto;height:auto" />
-                <h1 style="margin:24px 0 0;font-size:22px;font-weight:700;color:#111827;letter-spacing:-0.01em;font-family:${FONT}">You're invited to EOS</h1>
+                <h1 style="margin:24px 0 0;font-size:22px;font-weight:700;color:#111827;letter-spacing:-0.01em;font-family:${FONT}">Welcome to the LVL/PSK EOS Platform</h1>
                 <p style="margin:8px 0 0;color:#9ca3af;font-size:11px;font-weight:600;letter-spacing:.18em;text-transform:uppercase;font-family:${FONT}">EOS Platform &middot; For LVL/PSK Teams</p>
                 <p style="margin:24px 0 0;font-size:15px;line-height:1.6;color:#374151;text-align:left;font-family:${FONT}">Hi ${firstName},</p>
                 <p style="margin:12px 0 0;font-size:15px;line-height:1.6;color:#374151;text-align:left;font-family:${FONT}">${introCopy}</p>${otpBlock}
@@ -163,5 +163,10 @@ export function invitationEmail(
     </table>
   </body>`;
 
-  return { subject: "You're invited to the EOS Platform", html, text, attachments };
+  return {
+    subject: "LVL/PSK EOS Platform — your account & sign-in details",
+    html,
+    text,
+    attachments,
+  };
 }

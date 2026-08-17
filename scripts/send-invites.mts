@@ -14,11 +14,19 @@
  *         at first sign-in.
  */
 import { randomBytes } from "node:crypto";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 
 import { neon } from "@neondatabase/serverless";
 import nodemailer from "nodemailer";
 
 import { invitationEmail } from "../src/lib/l10/email-templates";
+
+const GUIDE_PDF = join(
+  dirname(fileURLToPath(import.meta.url)),
+  "assets",
+  "EOS-Platform-Quick-Start.pdf",
+);
 
 const LOGIN_URL = "https://eos.rnd-loki.com/l10/login";
 // Already using the system — no invite, passwords untouched.
@@ -61,6 +69,14 @@ async function sendInvite(
     to,
     ...mail,
     subject: `${subjectPrefix}${mail.subject}`,
+    attachments: [
+      ...mail.attachments,
+      {
+        filename: "EOS Platform - Quick Start Guide.pdf",
+        path: GUIDE_PDF,
+        contentType: "application/pdf",
+      },
+    ],
   });
 }
 
