@@ -4,13 +4,13 @@
 <meta charset="utf-8" />
 <title>LVL/PSK EOS Platform — Quick Start Guide</title>
 <style>
-  @page { size: A4; margin: 16mm 15mm; }
+  @page { size: A4; margin: 14mm 14mm; }
   * { box-sizing: border-box; }
   body {
     font-family: "Segoe UI", Arial, Helvetica, sans-serif;
     color: #1f2937;
-    font-size: 10.5pt;
-    line-height: 1.55;
+    font-size: 10pt;
+    line-height: 1.5;
     margin: 0;
   }
   .eyebrow {
@@ -18,11 +18,9 @@
     letter-spacing: .18em; text-transform: uppercase; margin: 0 0 4px;
   }
   h1 { font-size: 19pt; margin: 0 0 2px; letter-spacing: -0.01em; color: #111827; }
-  .subtitle { color: #6b7280; margin: 0 0 14px; font-size: 10.5pt; }
-  .rule { height: 3px; background: linear-gradient(to right, #f05100, #fb8c00, #fbbf24); border-radius: 2px; margin-bottom: 16px; }
-  h2 {
-    font-size: 12pt; color: #f05100; margin: 16px 0 6px;
-  }
+  .subtitle { color: #6b7280; margin: 0 0 12px; font-size: 10.5pt; }
+  .rule { height: 3px; background: linear-gradient(to right, #f05100, #fb8c00, #fbbf24); border-radius: 2px; margin-bottom: 14px; }
+  h2 { font-size: 12pt; color: #f05100; margin: 16px 0 6px; break-after: avoid; }
   h2 .num {
     display: inline-block; width: 18px; height: 18px; line-height: 18px;
     text-align: center; background: #f05100; color: #fff; border-radius: 50%;
@@ -33,21 +31,55 @@
   li { margin-bottom: 3px; }
   .card {
     background: #faf7f3; border: 1px solid #eee7de; border-radius: 10px;
-    padding: 10px 14px; margin-bottom: 8px;
+    padding: 10px 14px; margin-bottom: 8px; break-inside: avoid;
   }
   .card b.title { color: #111827; }
-  code, .mono {
-    font-family: "Courier New", Courier, monospace; font-weight: 700;
-  }
   .callout {
     border-left: 3px solid #f05100; background: #fff7f2;
     padding: 8px 12px; border-radius: 0 8px 8px 0; margin: 8px 0;
+    break-inside: avoid;
   }
   .muted { color: #6b7280; font-size: 9.5pt; }
   table.steps { border-collapse: collapse; width: 100%; margin-bottom: 8px; }
   table.steps td { vertical-align: top; padding: 3px 0; }
   table.steps td.n { width: 22px; color: #f05100; font-weight: 700; }
-  .footer { margin-top: 18px; color: #9ca3af; font-size: 8.5pt; text-align: center; }
+  .shot {
+    width: 100%; border: 1px solid #e5e7eb; border-radius: 10px;
+    display: block; margin: 6px 0 4px;
+  }
+  .shot-caption { color: #9ca3af; font-size: 8.5pt; margin: 0 0 10px; text-align: center; }
+  .shot-block { break-inside: avoid; margin-bottom: 6px; }
+  .badge-auto {
+    display: inline-block; background: #ecfdf5; color: #047857;
+    border: 1px solid #a7f3d0; border-radius: 999px; padding: 0 8px;
+    font-size: 8pt; font-weight: 700; letter-spacing: .04em;
+  }
+  .badge-live {
+    display: inline-block; background: #ecfdf5; color: #047857;
+    border: 1px solid #a7f3d0; border-radius: 999px; padding: 0 8px;
+    font-size: 8pt; font-weight: 700;
+  }
+  .badge-soon {
+    display: inline-block; background: #fff7ed; color: #c2410c;
+    border: 1px solid #fed7aa; border-radius: 999px; padding: 0 8px;
+    font-size: 8pt; font-weight: 700;
+  }
+  table.status { border-collapse: collapse; width: 100%; margin: 6px 0 10px; }
+  table.status th {
+    text-align: left; font-size: 9pt; color: #6b7280; font-weight: 600;
+    border-bottom: 2px solid #eee7de; padding: 4px 8px;
+  }
+  table.status td { border-bottom: 1px solid #f3efe9; padding: 5px 8px; vertical-align: top; }
+  .two-col { display: flex; gap: 14px; align-items: flex-start; break-inside: avoid; }
+  .two-col .col { flex: 1; }
+  .two-col .col-narrow { flex: 0 0 32%; }
+  .phone-shot {
+    width: 100%; border: 1px solid #e5e7eb; border-radius: 14px; display: block;
+  }
+  .page-break { break-before: page; }
+  .footer { margin-top: 16px; color: #9ca3af; font-size: 8.5pt; text-align: center; }
+  .sync-cols { display: flex; gap: 12px; }
+  .sync-cols ul { flex: 1; margin: 0; }
 </style>
 </head>
 <body>
@@ -55,6 +87,12 @@
   <h1>Quick Start Guide</h1>
   <p class="subtitle">Everything you need to sign in and run your week on the LVL/PSK EOS Platform.</p>
   <div class="rule"></div>
+
+  <div class="callout">
+    <b>Rolling out with HODs first.</b> You're in the first group on the platform.
+    Once we've gathered your feedback and seen how it runs in practice, we'll open it
+    up to your teams — so use it hard and tell us what's missing.
+  </div>
 
   <h2><span class="num">1</span>Signing in for the first time</h2>
   <table class="steps">
@@ -68,28 +106,108 @@
     link will be emailed to you. It expires in 1 hour.
   </div>
 
-  <h2><span class="num">2</span>Finding your way around</h2>
-  <p>The navigation bar at the top has a tab for each part of your Level&nbsp;10 rhythm:</p>
+  <h2><span class="num">2</span>The Dashboard — your week at a glance</h2>
+  <p>Scorecard status, rocks progress, open to-dos and issues, all in one view. The tabs along the top take you to each module.</p>
+  <div class="shot-block">
+    <img class="shot" src="screens/dashboard.png" alt="Dashboard" />
+    <p class="shot-caption">The Dashboard. The greyed-out <b>Meeting · Soon</b> tab is the guided meeting mode, still in development.</p>
+  </div>
 
-  <div class="card"><b class="title">Dashboard</b> — your weekly health at a glance: scorecard status, rocks progress, open to-dos and issues, all in one view.</div>
-  <div class="card"><b class="title">Scorecard</b> — the measurables you own, week by week. Enter your number for the week and it is instantly scored against goal (on-track shows green, off-track red). Some rows (e.g. revenue) update automatically from company systems.</div>
-  <div class="card"><b class="title">Rocks</b> — your quarterly priorities. Keep the status honest: <b>On&nbsp;Track</b> or <b>Off&nbsp;Track</b>, and mark milestones done as you complete them.</div>
-  <div class="card"><b class="title">To-Dos</b> — 7-day commitments from the weekly meeting. Tick them off as you finish; anything older than 7 days stands out.</div>
-  <div class="card"><b class="title">Issues</b> — the IDS list (Identify, Discuss, Solve). Spot an obstacle during the week? Add it here so it gets solved in the meeting instead of forgotten.</div>
-  <div class="card"><b class="title">Meeting</b> — <i>coming soon.</i> Guided Level&nbsp;10 meeting mode is on its way; the tab is visible but not yet active.</div>
+  <div class="page-break"></div>
 
-  <h2><span class="num">3</span>Your weekly rhythm</h2>
+  <h2><span class="num">3</span>Scorecard — measurables by week</h2>
+  <p>
+    The measurables you own, at weekly, monthly, quarterly and annual cadence. Enter your
+    number for the week and it is instantly scored against goal — green on-track, red off-track.
+    <span class="badge-auto">AUTO-SYNCED</span> rows fill themselves (see section 4).
+  </p>
+  <div class="shot-block">
+    <img class="shot" src="screens/scorecard.png" alt="Scorecard" />
+    <p class="shot-caption">Weekly KPIs — revenue and tonnage rows here are synced from SAP automatically.</p>
+  </div>
+
+  <h2><span class="num">4</span>What fills in automatically</h2>
+  <p>
+    These measurables are wired directly to SAP B1 / the data warehouse and refresh
+    <b>automatically about every 3 hours</b> — no manual entry needed:
+  </p>
+  <div class="sync-cols">
+    <ul>
+      <li><b>Revenue</b> — Loki Retail, Loki Non-Retail, PSK Shops</li>
+      <li><b>MT Invoiced</b> — Retail, Non-Retail, Total (tonnes)</li>
+      <li><b>Returns</b> — Actual Returns (KES &amp; count), Credit Notes – Other (KES &amp; count)</li>
+      <li><b>LPO Fulfillment</b> and <b>PSK Purchases</b></li>
+    </ul>
+    <ul>
+      <li><b>Finance</b> — Accounts Receivable &amp; Payable, DSO, Gross Profit %</li>
+      <li><b>Supply chain</b> — Pending dispatch (Retail / Non-Retail / Up-Country), pending prep, stock-outs (Runners / Repeaters / Strangers), in-house damages, expiry-risk SKUs</li>
+    </ul>
+  </div>
+  <p class="muted">Every other measurable is entered by its owner each week — that's the discipline the scorecard runs on.</p>
+
+  <h2><span class="num">5</span>Rocks — quarterly priorities</h2>
+  <p>Your 90-day priorities with milestones and due dates. Keep the status honest — <b>On&nbsp;Track</b> or <b>Off&nbsp;Track</b> — and tick milestones off as you complete them. The Trends tab shows completion history across quarters.</p>
+  <div class="shot-block">
+    <img class="shot" src="screens/rocks.png" alt="Rocks" />
+    <p class="shot-caption">Company rocks and personal rocks for the quarter, grouped by owner.</p>
+  </div>
+
+  <h2><span class="num">6</span>To-Dos &amp; Issues</h2>
+  <div class="shot-block">
+    <img class="shot" src="screens/todos.png" alt="To-Dos" />
+    <p class="shot-caption"><b>To-Dos</b> — 7-day commitments from the weekly meeting. Overdue dates show in red.</p>
+  </div>
+  <div class="shot-block">
+    <img class="shot" src="screens/issues.png" alt="Issues" />
+    <p class="shot-caption"><b>Issues</b> — the IDS list (Identify, Discuss, Solve). Log obstacles as they come up so they get solved in the meeting, not forgotten.</p>
+  </div>
+  <p>Use the <b>+ Create</b> button (top right, on every page) to quickly add a to-do, issue, rock or headline from anywhere.</p>
+
+  <h2><span class="num">7</span>What's live today &amp; what's coming</h2>
+  <table class="status">
+    <tr><th>Feature</th><th>Status</th></tr>
+    <tr><td>Dashboard, Scorecard (all cadences + Trends), Rocks (+ milestones &amp; Trends), To-Dos (team &amp; private), Issues (short &amp; long-term)</td><td><span class="badge-live">LIVE</span></td></tr>
+    <tr><td>Automatic SAP data syncs (section 4), quick Create, password reset by email, phone &amp; tablet access</td><td><span class="badge-live">LIVE</span></td></tr>
+    <tr><td><b>Meeting mode</b> — guided Level&nbsp;10 agenda that runs the weekly meeting end-to-end</td><td><span class="badge-soon">IN DEVELOPMENT</span></td></tr>
+    <tr><td><b>Team rollout</b> — accounts for your team members, once the HOD phase has bedded in</td><td><span class="badge-soon">PLANNED</span></td></tr>
+  </table>
+
+  <h2><span class="num">8</span>On your phone — add it to your home screen</h2>
+  <div class="two-col">
+    <div class="col">
+      <p>The platform works fully in your phone's browser — sign in once and you stay signed in for 30 days. Add it to your home screen and it opens full-screen like an app:</p>
+      <p style="margin-top:10px"><b>iPhone / iPad (Safari)</b></p>
+      <table class="steps">
+        <tr><td class="n">1.</td><td>Open <b>eos.rnd-loki.com</b> in <b>Safari</b> and sign in.</td></tr>
+        <tr><td class="n">2.</td><td>Tap the <b>Share</b> button (the square with the arrow pointing up, bottom of the screen).</td></tr>
+        <tr><td class="n">3.</td><td>Scroll down and tap <b>Add to Home Screen</b>, then <b>Add</b>.</td></tr>
+      </table>
+      <p style="margin-top:10px"><b>Android (Chrome)</b></p>
+      <table class="steps">
+        <tr><td class="n">1.</td><td>Open <b>eos.rnd-loki.com</b> in <b>Chrome</b> and sign in.</td></tr>
+        <tr><td class="n">2.</td><td>Tap the <b>⋮ menu</b> (top-right corner).</td></tr>
+        <tr><td class="n">3.</td><td>Tap <b>Add to Home screen</b> (on some phones it says <b>Install app</b>), then <b>Add</b>.</td></tr>
+      </table>
+      <p class="muted">An EOS icon appears on your home screen — tap it any time to jump straight to your dashboard.</p>
+    </div>
+    <div class="col-narrow">
+      <img class="phone-shot" src="screens/mobile-login.png" alt="EOS on a phone" />
+      <p class="shot-caption">The platform on your phone.</p>
+    </div>
+  </div>
+
+  <h2><span class="num">9</span>Your weekly rhythm</h2>
   <ul>
     <li><b>Before the meeting:</b> enter your scorecard numbers, update your rock statuses, and tick off completed to-dos.</li>
     <li><b>During the week:</b> log issues as they come up — big or small.</li>
-    <li><b>Use the + Create button</b> (top right) to quickly add a to-do, issue, rock or headline from anywhere.</li>
+    <li><b>Anywhere, any time:</b> the + Create button adds a to-do, issue, rock or headline in seconds.</li>
   </ul>
 
-  <h2><span class="num">4</span>Good to know</h2>
+  <h2><span class="num">10</span>Good to know</h2>
   <ul>
-    <li>The platform works on your phone and tablet as well as your computer.</li>
     <li>You only see data for the companies and departments you have access to.</li>
-    <li>Spotted a bug or have a suggestion? Use the in-app rating prompt, or tell Dennis or Taha.</li>
+    <li>Synced numbers are read-only — if one looks wrong, raise it as an Issue rather than working around it.</li>
+    <li>Your feedback drives the roadmap: rate the app when prompted, or tell Dennis or Taha directly.</li>
   </ul>
 
   <p class="footer">LVL/PSK EOS Platform &middot; eos.rnd-loki.com &middot; Accounts are provisioned by your team's super admin.</p>

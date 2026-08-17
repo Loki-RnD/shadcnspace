@@ -25,7 +25,7 @@ import { invitationEmail } from "../src/lib/l10/email-templates";
 const GUIDE_PDF = join(
   dirname(fileURLToPath(import.meta.url)),
   "assets",
-  "EOS-Platform-Quick-Start.pdf",
+  "quick-start-guide.pdf",
 );
 
 const LOGIN_URL = "https://eos.rnd-loki.com/l10/login";
