@@ -23,7 +23,9 @@ const OUT = join(dirname(fileURLToPath(import.meta.url)), "assets", "screens");
 const PAGES: { path: string; name: string }[] = [
   { path: "/l10", name: "dashboard" },
   { path: "/l10/scorecard", name: "scorecard" },
+  { path: "/l10/scorecard?view=trends", name: "scorecard-trends" },
   { path: "/l10/rocks", name: "rocks" },
+  { path: "/l10/rocks?view=trends", name: "rocks-trends" },
   { path: "/l10/todos", name: "todos" },
   { path: "/l10/issues", name: "issues" },
 ];
@@ -75,6 +77,14 @@ async function main() {
       httpOnly: true,
       secure: true,
     });
+
+    // Force light mode: next-themes reads localStorage first, and OS-level
+    // dark preference is overridden for good measure.
+    await page.emulateMediaFeatures([
+      { name: "prefers-color-scheme", value: "light" },
+    ]);
+    await page.goto(`${BASE}/l10/login`, { waitUntil: "domcontentloaded", timeout: 60000 });
+    await page.evaluate(() => localStorage.setItem("theme", "light"));
 
     // Desktop shots
     await page.setViewport({ width: 1440, height: 860, deviceScaleFactor: 2 });
