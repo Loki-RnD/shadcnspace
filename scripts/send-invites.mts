@@ -3,11 +3,13 @@
  *
  * Usage (from l10-platform/frontend, reads .env.local):
  *   npx tsx --env-file=.env.local scripts/send-invites.mts --test you@example.com
- *   npx tsx --env-file=.env.local scripts/send-invites.mts --live
+ *   npx tsx --env-file=.env.local scripts/send-invites.mts --live [email ...]
  *
  * --test  Renders a sample invite (no database writes) and sends it to the
  *         given address so the email can be reviewed before the real run.
- * --live  For every active hod user except the excluded super admins:
+ * --live  With emails: only those users (fresh OTP each — use for resends so
+ *         already-onboarded HODs keep their chosen passwords).
+ *         Without emails: every active hod user except the excluded super admins:
  *         generates a fresh one-time password, stores its bcrypt hash with
  *         must_change_password = true, voids outstanding reset links and
  *         emails the invite. The middleware then forces a password change
@@ -99,14 +101,23 @@ async function main() {
   }
 
   const sql = neon(process.env.DATABASE_URL!);
-  const users = (await sql`
-    select id, user_code, full_name, email
-    from core.users
-    where active
-      and system_role = 'hod'
-      and lower(email) not in (${EXCLUDED_EMAILS[0]}, ${EXCLUDED_EMAILS[1]})
-    order by user_code
-  `) as { id: string; user_code: string; full_name: string; email: string }[];
+  const onlyEmails = process.argv.slice(3).map((e) => e.toLowerCase());
+  const users = (
+    (await sql`
+      select id, user_code, full_name, email
+      from core.users
+      where active
+        and system_role = 'hod'
+        and lower(email) not in (${EXCLUDED_EMAILS[0]}, ${EXCLUDED_EMAILS[1]})
+      order by user_code
+    `) as { id: string; user_code: string; full_name: string; email: string }[]
+  ).filter((u) => onlyEmails.length === 0 || onlyEmails.includes(u.email.toLowerCase()));
+
+  if (onlyEmails.length > 0 && users.length !== onlyEmails.length) {
+    const found = new Set(users.map((u) => u.email.toLowerCase()));
+    const missing = onlyEmails.filter((e) => !found.has(e));
+    throw new Error(`No eligible HOD user for: ${missing.join(", ")}`);
+  }
 
   if (users.length === 0) {
     console.log("No eligible HOD users found — nothing to do.");

@@ -104,6 +104,7 @@ export function invitationEmail(
           "",
           `One-time password: ${oneTimePassword}`,
           "",
+          "Type it exactly as shown — capital letters, dashes included (or copy & paste it).",
           "You'll be asked to set your own password the first time you sign in.",
         ]
       : ["Sign in with this email address and the password shared with you:"]),
@@ -125,7 +126,7 @@ export function invitationEmail(
                     </td>
                   </tr>
                 </table>
-                <p style="margin:10px 0 0;font-size:12px;line-height:1.6;color:#9ca3af;text-align:left;font-family:${FONT}">You'll be asked to set your own password the first time you sign in.</p>`
+                <p style="margin:10px 0 0;font-size:12px;line-height:1.6;color:#9ca3af;text-align:left;font-family:${FONT}">Type it <strong>exactly as shown</strong> — capital letters, dashes included (or copy &amp; paste it). You'll be asked to set your own password the first time you sign in.</p>`
     : "";
 
   const introCopy = oneTimePassword
