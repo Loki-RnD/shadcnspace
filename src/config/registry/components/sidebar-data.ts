@@ -15,6 +15,8 @@ import {
   AppWindowMac,
   PanelRight,
   CircleStar,
+  Ratio,
+  ClipboardList,
 } from "lucide-react";
 import React from "react";
 
@@ -837,6 +839,47 @@ export const componentsMap: ComponentsMap = {
     image: "https://images.shadcnspace.com/assets/components/rating.webp",
     component: React.lazy(
       () => import("@/app/(site)/docs/component-info/rating"),
+    ),
+  },
+  sortable: {
+    title: "Sortable",
+    headingTitle: "Shadcn Sortable",
+    url: "/components/sortable",
+    icon: CircleStar,
+    columns: 1,
+    description: "Explore ready-to-use Shadcn Sortable components for Next.js and React apps, built with Radix UI, Base UI, and Tailwind CSS. Ready to copy, customize, and use in real web projects.",
+    image: "https://images.shadcnspace.com/assets/components/sortable.webp",
+    blockName: "sortable",
+    component: React.lazy(
+      () => import("@/app/(site)/docs/component-info/sortable"),
+    ),
+  },
+   "aspect-ratio": {
+    title: "Aspect Ratio",
+    headingTitle: "Shadcn Aspect Ratio",
+    url: "/components/aspect-ratio",
+    icon: Ratio,
+    blockName: "aspect-ratio",
+    columns: 2,
+    description:
+      "Explore ready-to-use Shadcn Aspect Ratio components for Next.js and React apps, built with Radix UI, Base UI, and Tailwind CSS. Ready to copy, customize, and use in real web projects.",
+    image: "https://images.shadcnspace.com/assets/components/aspect-ratio.webp",
+    component: React.lazy(
+      () => import("@/app/(site)/docs/component-info/aspect-ratio"),
+    ),
+  },
+   questionnaire: {
+    title: "Questionnaire",
+    headingTitle: "Shadcn Questionnaire",
+    url: "/components/questionnaire",
+    icon: ClipboardList,
+    columns: 1,
+    description:
+      "Explore ready-to-use Shadcn Questionnaire components for surveys, multi-step forms, feedback assessments, and interactive questionnaires, built with React, Radix UI, Base UI, and Tailwind CSS.",
+    image: "https://images.shadcnspace.com/assets/components/questionnaire.webp",
+    blockName: "questionnaire",
+    component: React.lazy(
+      () => import("@/app/(site)/docs/component-info/questionnaire"),
     ),
   },
   form: {

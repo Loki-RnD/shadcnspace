@@ -12,7 +12,7 @@
   "files": [
     {
       "path": "src/components/shadcn-space/separator/separator-08.tsx",
-      "content": "import { Separator } from \"@/components/ui/separator\";\nimport { Sparkles } from \"lucide-react\";\n\nconst WithIconDemo = () => {\n  return (\n    <div className=\"w-full max-w-sm\">\n      <div className=\"flex items-center gap-4\">\n        <Separator className=\"flex-1 border-border border-b-2 border-dashed bg-transparent\" />\n        <div className=\"shrink-0 rounded-full bg-orange-400/20 p-1.5\">\n          <Sparkles className=\"size-4 text-orange-400\" />\n        </div>\n        <Separator className=\"flex-1 border-border border-b-2 border-dashed bg-transparent\" />\n      </div>\n    </div>\n  );\n};\n\nexport default WithIconDemo;\n",
+      "content": "import { Separator } from \"@/components/ui/separator\";\r\nimport { Sparkles } from \"lucide-react\";\r\n\r\nconst WithIconDemo = () => {\r\n  return (\r\n    <div className=\"w-full max-w-sm\">\r\n      <div className=\"flex items-center gap-4\">\r\n        <Separator className=\"flex-1 border-border border-b-2 border-dashed bg-transparent\" />\r\n        <div className=\"shrink-0 rounded-full bg-orange-400/20 p-1.5\">\r\n          <Sparkles className=\"size-4 text-orange-400\" />\r\n        </div>\r\n        <Separator className=\"flex-1 border-border border-b-2 border-dashed bg-transparent\" />\r\n      </div>\r\n    </div>\r\n  );\r\n};\r\n\r\nexport default WithIconDemo;\r\n",
       "type": "registry:component",
       "target": "components/shadcn-space/separator/separator-08.tsx"
     }

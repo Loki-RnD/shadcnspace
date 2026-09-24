@@ -11,7 +11,7 @@
   "files": [
     {
       "path": "src/components/shadcn-space/separator/separator-07.tsx",
-      "content": "import { Badge } from \"@/components/ui/badge\";\nimport { Separator } from \"@/components/ui/separator\";\n\nconst WithBadgeDemo = () => {\n  return (\n    <div className=\"w-full max-w-sm\">\n      <div className=\"flex items-center gap-4\">\n        <Separator className=\"flex-1\" />\n        <Badge className=\"h-6 shrink-0 rounded-full px-4 text-xs font-medium\">\n          New Features\n        </Badge>\n        <Separator className=\"flex-1\" />\n      </div>\n    </div>\n  );\n};\n\nexport default WithBadgeDemo;\n",
+      "content": "import { Badge } from \"@/components/ui/badge\";\r\nimport { Separator } from \"@/components/ui/separator\";\r\n\r\nconst WithBadgeDemo = () => {\r\n  return (\r\n    <div className=\"w-full max-w-sm\">\r\n      <div className=\"flex items-center gap-4\">\r\n        <Separator className=\"flex-1\" />\r\n        <Badge className=\"h-6 shrink-0 rounded-full px-4 text-xs font-medium\">\r\n          New Features\r\n        </Badge>\r\n        <Separator className=\"flex-1\" />\r\n      </div>\r\n    </div>\r\n  );\r\n};\r\n\r\nexport default WithBadgeDemo;\r\n",
       "type": "registry:component",
       "target": "components/shadcn-space/separator/separator-07.tsx"
     }

@@ -496,5 +496,28 @@ export const categories = {
     metaKeyword: "shadcn rating",
     metaTitle: "Shadcn Rating Components for React & Next.js",
     metaDescription: "Explore ready-to-use, animated Shadcn Rating components for star ratings, interactive review scores, feedback elements, built with Base UI, and Tailwind CSS for React and Next.js apps.",
-  }
+  },
+
+   "sortable": {
+    name: "sortable",
+    title: "Sortable",
+    metaKeyword: "shadcn sortable",
+    metaTitle: "Shadcn Sortable Components for React & Next.js",
+    metaDescription: "Explore ready-to-use, animated Shadcn Sortable components for drag-and-drop functionality, built with Radix UI, Base UI, and Tailwind CSS for React and Next.js apps.",
+  },
+  "aspect-ratio": {
+    name: "aspect-ratio",
+    title: "Aspect Ratio",
+    metaKeyword: "shadcn aspect ratio",
+    metaTitle: "Shadcn Aspect Ratio Components for React & Next.js",
+    metaDescription: "Explore ready-to-use, animated Shadcn Aspect Ratio components for images, videos, and other media elements, built with Radix UI, Base UI, and Tailwind CSS for React and Next.js apps.",
+  },
+  questionnaire: {
+    name: "questionnaire",
+    title: "Questionnaire",
+    metaKeyword: "shadcn questionnaire",
+    metaTitle: "Shadcn Questionnaire Components & Variants",
+    metaDescription:
+      "Explore ready-to-use Shadcn Questionnaire components for surveys, feedback forms, assessments, and multi-step questions, built with React, Tailwind CSS, Base UI, and Radix UI.",
+  },
 } as const;

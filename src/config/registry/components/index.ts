@@ -145,6 +145,50 @@ export const components = [
       },
     ],
     category: categories["marquee"],
+    
+  },
+  {
+    name: "marquee-04",
+    title: "Marquee 04 - Fashion Video Showcase",
+    description: "Fashion video showcase marquee component",
+    type: "registry:component",
+    dependencies: [],
+    registryDependencies: ["card"],
+    files: [
+      {
+        path: "src/components/shadcn-space/marquee/marquee-04.tsx",
+        type: "registry:component",
+        target: "components/shadcn-space/marquee/marquee-04.tsx",
+      },
+      {
+        path: "src/components/shadcn-space/animations/marquee.tsx",
+        type: "registry:component",
+        target: "components/shadcn-space/animations/marquee.tsx",
+      },
+    ],
+    category: categories["marquee"],
+    isNew: true,
+  },
+  {
+    name: "marquee-05",
+    title: "Marquee 05 - Trending Stocks",
+    description: "Trending stocks marquee component",
+    type: "registry:component",
+    dependencies: ["lucide-react"],
+    registryDependencies: [],
+    files: [
+      {
+        path: "src/components/shadcn-space/marquee/marquee-05.tsx",
+        type: "registry:component",
+        target: "components/shadcn-space/marquee/marquee-05.tsx",
+      },
+      {
+        path: "src/components/shadcn-space/animations/marquee.tsx",
+        type: "registry:component",
+        target: "components/shadcn-space/animations/marquee.tsx",
+      },
+    ],
+    category: categories["marquee"],
     isNew: true,
   },
   {
@@ -726,7 +770,7 @@ export const components = [
       },
     ],
     category: categories["button"],
-    isNew: true,
+    
   },
   {
     name: "button-21",
@@ -744,7 +788,7 @@ export const components = [
       },
     ],
     category: categories["button"],
-    isNew: true,
+    
   },
   {
     name: "button-22",
@@ -761,7 +805,7 @@ export const components = [
       },
     ],
     category: categories["button"],
-    isNew: true,
+    
   },
   {
     name: "button-23",
@@ -778,7 +822,7 @@ export const components = [
       },
     ],
     category: categories["button"],
-    isNew: true,
+    
   },
   {
     name: "button-24",
@@ -795,7 +839,7 @@ export const components = [
       },
     ],
     category: categories["button"],
-    isNew: true,
+    
   },
   {
     name: "button-25",
@@ -812,7 +856,7 @@ export const components = [
       },
     ],
     category: categories["button"],
-    isNew: true,
+    
   },
   {
     name: "button-26",
@@ -831,7 +875,7 @@ export const components = [
     ],
     category: categories["button"],
     isPro: false,
-    isNew: true,
+    
   },
   {
     name: "button-27",
@@ -850,7 +894,7 @@ export const components = [
     ],
     category: categories["button"],
     isPro: false,
-    isNew: true,
+    
   },
   {
     name: "button-28",
@@ -869,7 +913,7 @@ export const components = [
     ],
     category: categories["button"],
     isPro: false,
-    isNew: true,
+    
   },
   {
     name: "button-29",
@@ -888,6 +932,62 @@ export const components = [
     ],
     category: categories["button"],
     isPro: false,
+    
+  },
+   {
+    name: "button-30",
+    title: "Button 30 - Confetti",
+    description:
+      "Celebration button that fires a confetti burst from the button and springs on click",
+    type: "registry:component",
+    dependencies: ["motion", "canvas-confetti"],
+    registryDependencies: ["button"],
+    files: [
+      {
+        path: "src/components/shadcn-space/button/button-30.tsx",
+        type: "registry:component",
+        target: "components/shadcn-space/button/button-30.tsx",
+      },
+    ],
+    category: categories["button"],
+    isNew: true,
+
+  },
+  {
+    name: "button-31",
+    title: "Button 31 - Emoji Burst",
+    description:
+      "Like/react button that launches emoji particles that arc, collide with the button, and settle on top, built with a lightweight canvas physics loop",
+    type: "registry:component",
+    dependencies: ["motion"],
+    registryDependencies: ["button"],
+    files: [
+      {
+        path: "src/components/shadcn-space/button/button-31.tsx",
+        type: "registry:component",
+        target: "components/shadcn-space/button/button-31.tsx",
+      },
+    ],
+    category: categories["button"],
+    isNew: true,
+
+  },
+  {
+    name: "button-32",
+    title: "Button 32 - Generate AI",
+    description:
+      "AI generate button with a continuously spinning conic-gradient border",
+    type: "registry:component",
+    dependencies: ["lucide-react"],
+    registryDependencies: ["button"],
+    files: [
+      {
+        path: "src/components/shadcn-space/button/button-32.tsx",
+        type: "registry:component",
+        target: "components/shadcn-space/button/button-32.tsx",
+      },
+    ],
+    category: categories["button"],
     isNew: true,
   },
   {
@@ -1001,7 +1101,7 @@ export const components = [
       },
     ],
     category: categories["button-group"],
-    isNew: true,
+    
   },
   {
     name: "button-group-08",
@@ -1018,7 +1118,7 @@ export const components = [
       },
     ],
     category: categories["button-group"],
-    isNew: true,
+    
   },
   {
     name: "button-group-09",
@@ -1035,7 +1135,7 @@ export const components = [
       },
     ],
     category: categories["button-group"],
-    isNew: true,
+    
   },
   {
     name: "button-group-10",
@@ -1052,7 +1152,7 @@ export const components = [
       },
     ],
     category: categories["button-group"],
-    isNew: true,
+    
   },
   {
     name: "button-group-11",
@@ -1069,7 +1169,7 @@ export const components = [
       },
     ],
     category: categories["button-group"],
-    isNew: true,
+    
   },
   {
     name: "button-group-12",
@@ -1087,7 +1187,7 @@ export const components = [
       },
     ],
     category: categories["button-group"],
-    isNew: true,
+    
   },
   {
     name: "button-group-13",
@@ -1105,7 +1205,7 @@ export const components = [
       },
     ],
     category: categories["button-group"],
-    isNew: true,
+    
   },
   {
     name: "badge-01",
@@ -1270,6 +1370,65 @@ export const components = [
       },
     ],
     category: categories["badge"],
+  },
+   {
+    name: "badge-11",
+    title: "Badge 11 - Count Pop",
+    description:
+      "Notification/cart count badge that springs and pops on every count change",
+    type: "registry:component",
+    dependencies: ["motion", "lucide-react"],
+    registryDependencies: ["badge", "button"],
+    files: [
+      {
+        path: "src/components/shadcn-space/badge/badge-11.tsx",
+        type: "registry:component",
+        target: "components/shadcn-space/badge/badge-11.tsx",
+      },
+    ],
+    category: categories["badge"],
+    isAnimate: true,
+    isNew:true
+  },
+  {
+    name: "badge-12",
+    title: "Badge 12 - Removable Filter Chip",
+    description:
+      "Dismissible filter chip badge with hover/tap micro-interactions and animated removal",
+    type: "registry:component",
+    dependencies: ["motion", "lucide-react"],
+    registryDependencies: ["badge", "button"],
+    files: [
+      {
+        path: "src/components/shadcn-space/badge/badge-12.tsx",
+        type: "registry:component",
+        target: "components/shadcn-space/badge/badge-12.tsx",
+      },
+    ],
+    category: categories["badge"],
+    isAnimate: true,
+    isNew:true
+
+  },
+  {
+    name: "badge-13",
+    title: "Badge 13 - Streak Display",
+    description:
+      "Flame streak badge with a flickering icon loop and an animated roll-in day count",
+    type: "registry:component",
+    dependencies: ["motion", "lucide-react", "@number-flow/react"],
+    registryDependencies: ["badge"],
+    files: [
+      {
+        path: "src/components/shadcn-space/badge/badge-13.tsx",
+        type: "registry:component",
+        target: "components/shadcn-space/badge/badge-13.tsx",
+      },
+    ],
+    category: categories["badge"],
+    isAnimate: true,
+    isNew:true
+
   },
   {
     name: "calendar-01",
@@ -1534,7 +1693,7 @@ export const components = [
     ],
     category: categories["calendar"],
     isPro: false,
-    isNew: true,
+    
   },
   {
     name: "tooltip-01",
@@ -1647,6 +1806,42 @@ export const components = [
       },
     ],
     category: categories["tooltip"],
+  },
+   {
+    name: "tooltip-08",
+    title: "Tooltip 08 - Editor Toolbar Tooltip",
+    description: "Tooltip component",
+    type: "registry:component",
+    registryDependencies: ["button", "kbd"],
+    dependencies: ["motion", "lucide-react"],
+    files: [
+      {
+        path: "src/components/shadcn-space/tooltip/tooltip-08.tsx",
+        type: "registry:component",
+        target: "components/shadcn-space/tooltip/tooltip-08.tsx",
+      },
+    ],
+    category: categories["tooltip"],
+    isNew:true,
+
+  },
+  {
+    name: "tooltip-09",
+    title: "Tooltip 09 - Gooey Status Tooltip",
+    description: "Tooltip component",
+    type: "registry:component",
+    registryDependencies: ["button"],
+    dependencies: ["motion", "lucide-react"],
+    files: [
+      {
+        path: "src/components/shadcn-space/tooltip/tooltip-09.tsx",
+        type: "registry:component",
+        target: "components/shadcn-space/tooltip/tooltip-09.tsx",
+      },
+    ],
+    category: categories["tooltip"],
+    isNew:true,
+
   },
   {
     name: "animated-text-01",
@@ -1782,6 +1977,74 @@ export const components = [
     ],
     category: categories["animated-text"],
     isAnimate: true,
+    
+  },
+  {
+    name: "animated-text-09",
+    title: "Animated Text 09 - Text Decoder",
+    description: "Scrambled cipher characters decode into the word, then re-encrypt",
+    type: "registry:component",
+    registryDependencies: [],
+    dependencies: [],
+    files: [
+      {
+        path: "src/components/shadcn-space/animated-text/animated-text-09.tsx",
+        type: "registry:component",
+        target: "components/shadcn-space/animated-text/animated-text-09.tsx",
+      },
+    ],
+    category: categories["animated-text"],
+    isNew: true,
+  },
+  {
+    name: "animated-text-10",
+    title: "Animated Text 10 - Scanner",
+    description: "A scanning bar sweeps the word, lighting letters as it passes",
+    type: "registry:component",
+    registryDependencies: [],
+    dependencies: ["motion"],
+    files: [
+      {
+        path: "src/components/shadcn-space/animated-text/animated-text-10.tsx",
+        type: "registry:component",
+        target: "components/shadcn-space/animated-text/animated-text-10.tsx",
+      },
+    ],
+    category: categories["animated-text"],
+    isNew: true,
+  },
+  {
+    name: "animated-text-11",
+    title: "Animated Text 11 - Light Leak",
+    description: "Cinematic colour veils wash diagonally through the word",
+    type: "registry:component",
+    registryDependencies: [],
+    dependencies: ["motion"],
+    files: [
+      {
+        path: "src/components/shadcn-space/animated-text/animated-text-11.tsx",
+        type: "registry:component",
+        target: "components/shadcn-space/animated-text/animated-text-11.tsx",
+      },
+    ],
+    category: categories["animated-text"],
+    isNew: true,
+  },
+  {
+    name: "animated-text-12",
+    title: "Animated Text 12 - Origami Fold",
+    description: "Paper letters hinge open on staggered folds, then tuck shut",
+    type: "registry:component",
+    registryDependencies: [],
+    dependencies: [],
+    files: [
+      {
+        path: "src/components/shadcn-space/animated-text/animated-text-12.tsx",
+        type: "registry:component",
+        target: "components/shadcn-space/animated-text/animated-text-12.tsx",
+      },
+    ],
+    category: categories["animated-text"],
     isNew: true,
   },
   {
@@ -2398,6 +2661,59 @@ export const components = [
     category: categories["select"],
   },
   {
+    name: "select-10",
+    title: "Select 10 - Flip Clock Daypart Picker",
+    description:
+      "Pill-shaped hour/minute/period time picker with flip-digit transitions, a day/night glow ring, and quick daypart presets",
+    type: "registry:component",
+    registryDependencies: ["select", "button"],
+    dependencies: ["motion"],
+    files: [
+      {
+        path: "src/components/shadcn-space/select/select-10.tsx",
+        type: "registry:component",
+        target: "components/shadcn-space/select/select-10.tsx",
+      },
+    ],
+    category: categories["select"],
+    isNew: true,
+  },
+  {
+    name: "select-11",
+    title: "Select 11 - Alert Channels Multi-Select",
+    description:
+      "Multi-select trigger that summarizes chosen alert channels as an animated overlapping icon stack with a spring-counted badge",
+    type: "registry:component",
+    registryDependencies: ["select", "badge"],
+    dependencies: ["motion", "lucide-react"],
+    files: [
+      {
+        path: "src/components/shadcn-space/select/select-11.tsx",
+        type: "registry:component",
+        target: "components/shadcn-space/select/select-11.tsx",
+      },
+    ],
+    category: categories["select"],
+    isNew: true,
+  },
+  {
+    name: "select-12",
+    title: "Select 12 - Workspace Role Select",
+    description: "Select for workspace roles with colored icon badges and descriptive subtext per option",
+    type: "registry:component",
+    registryDependencies: ["select"],
+    dependencies: ["lucide-react"],
+    files: [
+      {
+        path: "src/components/shadcn-space/select/select-12.tsx",
+        type: "registry:component",
+        target: "components/shadcn-space/select/select-12.tsx",
+      },
+    ],
+    category: categories["select"],
+    isNew: true,
+  },
+  {
     name: "checkbox-01",
     title: "Checkbox-01 - Checkbox with sizes",
     description: "Checkbox component",
@@ -2642,6 +2958,41 @@ export const components = [
     ],
     category: categories["radio-group"],
   },
+   {
+    name: "radio-group-07",
+    title: "Radio Group 07 - Ripple Effect",
+    description: "Radio Group component",
+    type: "registry:component",
+    registryDependencies: ["label", "radio-group"],
+    dependencies: ["motion"],
+    files: [
+      {
+        path: "src/components/shadcn-space/radio-group/radio-group-07.tsx",
+        type: "registry:component",
+        target: "components/shadcn-space/radio-group/radio-group-07.tsx",
+      },
+    ],
+    category: categories["radio-group"],
+    isNew:true
+  },
+  {
+    name: "radio-group-08",
+    title: "Radio Group 08 - Hop Effect",
+    description: "Radio Group component",
+    type: "registry:component",
+    registryDependencies: ["label", "radio-group"],
+    dependencies: ["motion", "lucide-react"],
+    files: [
+      {
+        path: "src/components/shadcn-space/radio-group/radio-group-08.tsx",
+        type: "registry:component",
+        target: "components/shadcn-space/radio-group/radio-group-08.tsx",
+      },
+    ],
+    category: categories["radio-group"],
+    isNew:true
+
+  },
   {
     name: "switch-01",
     title: "Switch-01 - Active effect",
@@ -2737,6 +3088,43 @@ export const components = [
       },
     ],
     category: categories["switch"],
+  },
+   {
+    name: "switch-07",
+    title: "Switch 07 - Labeled Toggle",
+    description:
+      "A reusable labeled switch with custom onLabel/offLabel props, a track that auto-sizes to the label text, and a spring-driven grip-textured thumb.",
+    type: "registry:component",
+    registryDependencies: [],
+    dependencies: ["motion"],
+    files: [
+      {
+        path: "src/components/shadcn-space/switch/switch-07.tsx",
+        type: "registry:component",
+        target: "components/shadcn-space/switch/switch-07.tsx",
+      },
+    ],
+    category: categories["switch"],
+    isNew:true,
+  },
+  {
+    name: "switch-08",
+    title: "Switch 08 - Role Picker",
+    description:
+      "A colorful role-picker switch that swaps track color and thumb icon per state, with a soft ambient glow and side labels that emphasize the active choice.",
+    type: "registry:component",
+    registryDependencies: [],
+    dependencies: ["motion", "lucide-react"],
+    files: [
+      {
+        path: "src/components/shadcn-space/switch/switch-08.tsx",
+        type: "registry:component",
+        target: "components/shadcn-space/switch/switch-08.tsx",
+      },
+    ],
+    category: categories["switch"],
+    isNew:true,
+
   },
   {
     name: "tabs-01",
@@ -2866,7 +3254,7 @@ export const components = [
       },
     ],
     category: categories["tabs"],
-    isNew: true,
+    
   },
   {
     name: "tabs-09",
@@ -2900,7 +3288,7 @@ export const components = [
       },
     ],
     category: categories["tabs"],
-    isNew: true,
+    
   },
   {
     name: "card-01",
@@ -3169,7 +3557,7 @@ export const components = [
     ],
     category: categories["card"],
     isPro: false,
-    isNew: true,
+    
   },
   {
     name: "card-17",
@@ -3188,7 +3576,7 @@ export const components = [
     ],
     category: categories["card"],
     isPro: false,
-    isNew: true,
+    
   },
   {
     name: "card-18",
@@ -3207,7 +3595,44 @@ export const components = [
     ],
     category: categories["card"],
     isPro: false,
+    
+  },
+  {
+    name: "card-19",
+    title: "Card 19 - Place Card",
+    description:
+      "A place/location card whose grayscale image turns to color and scales up on hover using pure Tailwind transitions, with a title and description overlaid on the image.",
+    type: "registry:component",
+    registryDependencies: ["card"],
+    dependencies: [],
+    files: [
+      {
+        path: "src/components/shadcn-space/card/card-19.tsx",
+        type: "registry:component",
+        target: "components/shadcn-space/card/card-19.tsx",
+      },
+    ],
+    category: categories["card"],
     isNew: true,
+  },
+  {
+    name: "card-20",
+    title: "Card 20 - Animated Event Card",
+    description:
+      "An animated event card with a cover image, floating date badge, staggered content reveal, time and location details, an attendee avatar stack, and an RSVP button.",
+    type: "registry:component",
+    registryDependencies: ["card", "badge", "button", "separator", "avatar"],
+    dependencies: ["lucide-react", "motion"],
+    files: [
+      {
+        path: "src/components/shadcn-space/card/card-20.tsx",
+        type: "registry:component",
+        target: "components/shadcn-space/card/card-20.tsx",
+      },
+    ],
+    category: categories["card"],
+    isAnimate: true,
+    isNew:true,
   },
   {
     name: "shine-border-01",
@@ -3275,6 +3700,60 @@ export const components = [
       },
     ],
     category: categories["shine-border"],
+  },
+  {
+    name: "shine-border-05",
+    title: "Shine Border 05 - Aurora Glow",
+    description:
+      "An aurora glow shine border with a hue-rotating gradient ring and pulsing halo wrapping a simple centered card.",
+    type: "registry:component",
+    registryDependencies: ["card", "badge"],
+    dependencies: ["lucide-react"],
+    files: [
+      {
+        path: "src/components/shadcn-space/shine-border/shine-border-05.tsx",
+        type: "registry:component",
+        target: "components/shadcn-space/shine-border/shine-border-05.tsx",
+      },
+    ],
+    category: categories["shine-border"],
+    isNew: true,
+  },
+  {
+    name: "shine-border-06",
+    title: "Shine Border 06 - Focus Frame",
+    description:
+      "A camera focus-lock shine border with pulsing corner brackets instead of a continuous glowing ring, wrapping a simple centered card.",
+    type: "registry:component",
+    registryDependencies: ["card", "badge"],
+    dependencies: ["lucide-react"],
+    files: [
+      {
+        path: "src/components/shadcn-space/shine-border/shine-border-06.tsx",
+        type: "registry:component",
+        target: "components/shadcn-space/shine-border/shine-border-06.tsx",
+      },
+    ],
+    category: categories["shine-border"],
+    isNew: true,
+  },
+  {
+    name: "shine-border-07",
+    title: "Shine Border 07 - Marching Dashes",
+    description:
+      "A marching dashes shine border with a crisp animated dashed outline continuously travelling around the edge, wrapping a simple centered card.",
+    type: "registry:component",
+    registryDependencies: ["card", "badge"],
+    dependencies: ["lucide-react"],
+    files: [
+      {
+        path: "src/components/shadcn-space/shine-border/shine-border-07.tsx",
+        type: "registry:component",
+        target: "components/shadcn-space/shine-border/shine-border-07.tsx",
+      },
+    ],
+    category: categories["shine-border"],
+    isNew: true,
   },
   {
     name: "number-ticker-01",
@@ -3361,6 +3840,60 @@ export const components = [
     category: categories["number-ticker"],
   },
   {
+    name: "number-ticker-06",
+    title: "Number Ticker 06 - Social Proof",
+    description:
+      "A social proof counter with a counting member number and a stacked avatar cluster, perfect for signup counts, community memberships, or join notifications.",
+    type: "registry:component",
+    registryDependencies: ["avatar"],
+    dependencies: ["@number-flow/react"],
+    files: [
+      {
+        path: "src/components/shadcn-space/number-ticker/number-ticker-06.tsx",
+        type: "registry:component",
+        target: "components/shadcn-space/number-ticker/number-ticker-06.tsx",
+      },
+    ],
+    category: categories["number-ticker"],
+    isNew: true,
+  },
+  {
+    name: "number-ticker-07",
+    title: "Number Ticker 07 - Trading",
+    description:
+      "A live trading ticker with an animated stock price, change percentage chip, sparkline chart, and volume data. Ideal for crypto prices, forex pairs, or market watchlists.",
+    type: "registry:component",
+    registryDependencies: [],
+    dependencies: [],
+    files: [
+      {
+        path: "src/components/shadcn-space/number-ticker/number-ticker-07.tsx",
+        type: "registry:component",
+        target: "components/shadcn-space/number-ticker/number-ticker-07.tsx",
+      },
+    ],
+    category: categories["number-ticker"],
+    isNew: true,
+  },
+  {
+    name: "number-ticker-08",
+    title: "Number Ticker 08 - Segmented LCD",
+    description:
+      "A retro seven-segment LCD display that renders digits as illuminated SVG segments, perfect for odometers, counters, temperature readouts, or any instrument-style metric.",
+    type: "registry:component",
+    registryDependencies: [],
+    dependencies: [],
+    files: [
+      {
+        path: "src/components/shadcn-space/number-ticker/number-ticker-08.tsx",
+        type: "registry:component",
+        target: "components/shadcn-space/number-ticker/number-ticker-08.tsx",
+      },
+    ],
+    category: categories["number-ticker"],
+    isNew: true,
+  },
+  {
     name: "spinning-text-01",
     title: "Spinning Text-01 - Basic",
     description: "Spinning Text component",
@@ -3439,7 +3972,7 @@ export const components = [
       },
     ],
     category: categories["date-picker"],
-    isNew: true,
+    
   },
   {
     name: "file-upload-01",
@@ -3569,7 +4102,7 @@ export const components = [
       },
     ],
     category: categories["combobox"],
-    isNew: true,
+    
   },
   {
     name: "carousel-01",
@@ -3735,6 +4268,43 @@ export const components = [
       }
     ],
     category: categories["alert"],
+  },
+  {
+    name: "alert-07",
+    title: "Alert 07 - With Hover-Fill Dismiss",
+    description:
+      "Toast-style alert with a spring entrance, icon pop-in, and a close button whose ring fills in on hover, built with motion/react",
+    type: "registry:component",
+    registryDependencies: ["alert", "button"],
+    dependencies: ["lucide-react", "motion"],
+    files: [
+      {
+        path: "src/components/shadcn-space/alert/alert-07.tsx",
+        type: "registry:component",
+        target: "components/shadcn-space/alert/alert-07.tsx",
+      },
+    ],
+    category: categories["alert"],
+    isNew:true
+  },
+  {
+    name: "alert-08",
+    title: "Alert 08 - Evaporate Dismiss",
+    description:
+      "Alert that dissolves away like evaporating water when dismissed, fading and blurring out with rising vapor wisps, built with motion/react",
+    type: "registry:component",
+    registryDependencies: ["alert", "button"],
+    dependencies: ["lucide-react", "motion"],
+    files: [
+      {
+        path: "src/components/shadcn-space/alert/alert-08.tsx",
+        type: "registry:component",
+        target: "components/shadcn-space/alert/alert-08.tsx",
+      },
+    ],
+    category: categories["alert"],
+    isNew:true
+
   },
   {
     name: "breadcrumb-01",
@@ -3949,7 +4519,7 @@ export const components = [
       },
     ],
     category: categories["dialog"],
-    isNew: true,
+    
   },
   {
     name: "dialog-08",
@@ -3968,7 +4538,7 @@ export const components = [
     ],
     category: categories["dialog"],
     isPro: false,
-    isNew: true,
+    
   },
   {
     name: "popover-01",
@@ -4067,6 +4637,60 @@ export const components = [
     category: categories["popover"],  
   },
   {
+    name: "popover-07",
+    title: "Popover 07 - Color Picker",
+    description:
+      "Color picker popover with preset swatches, a live hex input, and a copy-to-clipboard action.",
+    type: "registry:component",
+    registryDependencies: ["button", "input", "label", "popover"],
+    dependencies: ["lucide-react"],
+    files: [
+      {
+        path: "src/components/shadcn-space/popover/popover-07.tsx",
+        type: "registry:component",
+        target: "components/shadcn-space/popover/popover-07.tsx",
+      },
+    ],
+    category: categories["popover"],
+    isNew: true,
+  },
+  {
+    name: "popover-08",
+    title: "Popover 08 - Product Tour",
+    description:
+      "Icon-led product tour popover with progress dots and skip/next controls.",
+    type: "registry:component",
+    registryDependencies: ["button", "popover"],
+    dependencies: ["lucide-react", "motion"],
+    files: [
+      {
+        path: "src/components/shadcn-space/popover/popover-08.tsx",
+        type: "registry:component",
+        target: "components/shadcn-space/popover/popover-08.tsx",
+      },
+    ],
+    category: categories["popover"],
+    isNew: true,
+  },
+  {
+    name: "popover-09",
+    title: "Popover 09 - Status Picker",
+    description:
+      "Avatar-triggered popover to set online/away/busy/offline status with a custom message.",
+    type: "registry:component",
+    registryDependencies: ["avatar", "button", "badge", "input", "label", "popover"],
+    dependencies: ["lucide-react"],
+    files: [
+      {
+        path: "src/components/shadcn-space/popover/popover-09.tsx",
+        type: "registry:component",
+        target: "components/shadcn-space/popover/popover-09.tsx",
+      },
+    ],
+    category: categories["popover"],
+    isNew: true,
+  },
+  {
     name: "slider-01",
     title: "Slider 01 - Volume Control",
     description: "Volume control slider with volume icons and smooth fill animation.",
@@ -4147,6 +4771,42 @@ export const components = [
       },
     ],
     category: categories["slider"],
+  },
+  {
+    name: "slider-06",
+    title: "Slider 06 - Slingshot Launch Power",
+    description:
+      "A slingshot-style slider: grab the thumb and pull it off the track like a catapult, see the mirrored target reticle preview where it'll land, and release to launch it there along the same arc with a bouncy spring.",
+    type: "registry:component",
+    registryDependencies: [],
+    dependencies: ["motion", "@number-flow/react"],
+    files: [
+      {
+        path: "src/components/shadcn-space/slider/slider-06.tsx",
+        type: "registry:component",
+        target: "components/shadcn-space/slider/slider-06.tsx",
+      },
+    ],
+    category: categories["slider"],
+    isNew: true,
+  },
+  {
+    name: "slider-07",
+    title: "Slider 07 - Circular Volume Dial",
+    description:
+      "A circular knob slider styled as a volume dial: drag around the ring to sweep a gradient arc from the top, with the live value and unit shown in the center.",
+    type: "registry:component",
+    registryDependencies: [],
+    dependencies: ["motion", "@number-flow/react"],
+    files: [
+      {
+        path: "src/components/shadcn-space/slider/slider-07.tsx",
+        type: "registry:component",
+        target: "components/shadcn-space/slider/slider-07.tsx",
+      },
+    ],
+    category: categories["slider"],
+    isNew: true,
   },
   {
     name: "skeleton-01",
@@ -4328,7 +4988,7 @@ export const components = [
       },
     ],
     category: categories["spinner"],
-    isNew: true,
+    
   },
   {
     name: "spinner-09",
@@ -4346,7 +5006,7 @@ export const components = [
       },
     ],
     category: categories["spinner"],
-    isNew: true,
+    
   },
   {
     name: "spinner-10",
@@ -4364,7 +5024,7 @@ export const components = [
       },
     ],
     category: categories["spinner"],
-    isNew: true,
+    
   },
   {
     name: "sonner-01",
@@ -4832,6 +5492,129 @@ export const components = [
       },
     ],
     category: categories["dropdown-menu"],
+  },
+    {
+    name: "dropdown-menu-04",
+    title: "Dropdown Menu 04 - Shopping Cart",
+    description:
+      "An e-commerce cart dropdown that expands in place, with free-delivery progress, discounted prices, quantity controls, price details, and a place order button.",
+    type: "registry:component",
+    registryDependencies: [
+      "badge",
+      "button",
+      "button-group",
+      "progress",
+      "scroll-area",
+      "separator",
+    ],
+    dependencies: ["motion", "lucide-react"],
+    files: [
+      {
+        path: "src/components/shadcn-space/dropdown-menu/dropdown-menu-04.tsx",
+        type: "registry:component",
+        target: "components/shadcn-space/dropdown-menu/dropdown-menu-04.tsx",
+      },
+    ],
+    category: categories["dropdown-menu"],
+   
+    isNew: true,
+
+  },
+  {
+    name: "dropdown-menu-05",
+    title: "Dropdown Menu 05 - Search",
+    description:
+      "A search dropdown that expands in place with live filtering, category chips, recent and trending searches, and keyboard navigation.",
+    type: "registry:component",
+    registryDependencies: [
+      "badge",
+      "button",
+      "input-group",
+      "kbd",
+      "scroll-area",
+      "separator",
+    ],
+    dependencies: ["motion", "lucide-react"],
+    files: [
+      {
+        path: "src/components/shadcn-space/dropdown-menu/dropdown-menu-05.tsx",
+        type: "registry:component",
+        target: "components/shadcn-space/dropdown-menu/dropdown-menu-05.tsx",
+      },
+    ],
+    category: categories["dropdown-menu"],
+   
+    isNew: true,
+
+  },
+  {
+    name: "dropdown-menu-06",
+    title: "Dropdown Menu 06 - Filters",
+    description:
+      "A filter dropdown that expands in place with a price range slider, category checkboxes, rating chips, availability switches, and a live result count.",
+    type: "registry:component",
+    registryDependencies: [
+      "badge",
+      "button",
+      "checkbox",
+      "label",
+      "scroll-area",
+      "separator",
+      "slider",
+      "switch",
+    ],
+    dependencies: ["motion", "lucide-react"],
+    files: [
+      {
+        path: "src/components/shadcn-space/dropdown-menu/dropdown-menu-06.tsx",
+        type: "registry:component",
+        target: "components/shadcn-space/dropdown-menu/dropdown-menu-06.tsx",
+      },
+    ],
+    category: categories["dropdown-menu"],
+  
+    isNew: true,
+
+  },
+  {
+    name: "dropdown-menu-07",
+    title: "Dropdown Menu 07 - Export",
+    description:
+      "An export dropdown menu opened from a round button with a circular progress ring, with format items, a more-formats submenu, checkbox options, and an animated done state.",
+    type: "registry:component",
+    registryDependencies: ["badge", "button", "dropdown-menu"],
+    dependencies: ["motion", "lucide-react"],
+    files: [
+      {
+        path: "src/components/shadcn-space/dropdown-menu/dropdown-menu-07.tsx",
+        type: "registry:component",
+        target: "components/shadcn-space/dropdown-menu/dropdown-menu-07.tsx",
+      },
+    ],
+    category: categories["dropdown-menu"],
+    
+    isNew: true,
+
+  },
+  {
+    name: "dropdown-menu-08",
+    title: "Dropdown Menu 08 - Language Selector",
+    description:
+      "A language selector dropdown with an animated pill trigger, popular languages, region submenus, native names, RTL indicators, and an auto-translate checkbox item.",
+    type: "registry:component",
+    registryDependencies: ["badge", "button", "dropdown-menu"],
+    dependencies: ["motion", "lucide-react"],
+    files: [
+      {
+        path: "src/components/shadcn-space/dropdown-menu/dropdown-menu-08.tsx",
+        type: "registry:component",
+        target: "components/shadcn-space/dropdown-menu/dropdown-menu-08.tsx",
+      },
+    ],
+    category: categories["dropdown-menu"],
+    
+    isNew: true,
+
   },
   {
     name: "input-otp-01",
@@ -5795,7 +6578,7 @@ export const components = [
       },
     ],
     category: categories["toggle"],
-    isNew: true,
+    
   },
   {
     name: "toggle-02",
@@ -5813,7 +6596,7 @@ export const components = [
       },
     ],
     category: categories["toggle"],
-    isNew: true,
+    
   },
   {
     name: "toggle-03",
@@ -5831,7 +6614,7 @@ export const components = [
       },
     ],
     category: categories["toggle"],
-    isNew: true,
+    
   },
   {
     name: "resizable-01",
@@ -5853,6 +6636,60 @@ export const components = [
         path: "src/components/shadcn-space/resizable/resizable-01.tsx",
         type: "registry:component",
         target: "components/shadcn-space/resizable/resizable-01.tsx",
+      },
+    ],
+    category: categories["resizable"],
+    
+  },
+  {
+    name: "resizable-02",
+    title: "Resizable 02 - Horizontal Split",
+    description:
+      "A simple horizontal resizable layout with a sidebar and content panel.",
+    type: "registry:component",
+    registryDependencies: ["resizable"],
+    dependencies: [],
+    files: [
+      {
+        path: "src/components/shadcn-space/resizable/resizable-02.tsx",
+        type: "registry:component",
+        target: "components/shadcn-space/resizable/resizable-02.tsx",
+      },
+    ],
+    category: categories["resizable"],
+    isNew: true,
+  },
+  {
+    name: "resizable-03",
+    title: "Resizable 03 - Vertical Split",
+    description:
+      "A simple vertical resizable layout with a header and content panel.",
+    type: "registry:component",
+    registryDependencies: ["resizable"],
+    dependencies: [],
+    files: [
+      {
+        path: "src/components/shadcn-space/resizable/resizable-03.tsx",
+        type: "registry:component",
+        target: "components/shadcn-space/resizable/resizable-03.tsx",
+      },
+    ],
+    category: categories["resizable"],
+    isNew: true,
+  },
+  {
+    name: "resizable-04",
+    title: "Resizable 04 - Nested Panels",
+    description:
+      "A nested resizable layout combining horizontal and vertical panel groups for a header, sidebar, and content area.",
+    type: "registry:component",
+    registryDependencies: ["resizable"],
+    dependencies: [],
+    files: [
+      {
+        path: "src/components/shadcn-space/resizable/resizable-04.tsx",
+        type: "registry:component",
+        target: "components/shadcn-space/resizable/resizable-04.tsx",
       },
     ],
     category: categories["resizable"],
@@ -5880,7 +6717,7 @@ export const components = [
       },
     ],
     category: categories["item"],
-    isNew: true,
+    
   },
   {
     name: "item-02",
@@ -5898,7 +6735,7 @@ export const components = [
       },
     ],
     category: categories["item"],
-    isNew: true,
+    
   },
   {
     name: "field-01",
@@ -5916,7 +6753,7 @@ export const components = [
       },
     ],
     category: categories["field"],
-    isNew: true,
+    
   },
   {
     name: "field-02",
@@ -5934,7 +6771,7 @@ export const components = [
       },
     ],
     category: categories["field"],
-    isNew: true,
+    
   },
   {
     name: "field-03",
@@ -5952,7 +6789,7 @@ export const components = [
       },
     ],
     category: categories["field"],
-    isNew: true,
+    
   },
   {
     name: "field-04",
@@ -5970,7 +6807,7 @@ export const components = [
       },
     ],
     category: categories["field"],
-    isNew: true,
+    
   },
   {
     name: "stepper-01",
@@ -5987,7 +6824,7 @@ export const components = [
       },
     ],
     category: categories["stepper"],
-    isNew: true,
+    
   },
   {
     name: "stepper-02",
@@ -6012,7 +6849,44 @@ export const components = [
       },
     ],
     category: categories["stepper"],
-    isNew: true,
+    
+  },
+  {
+    name: "stepper-03",
+    title: "Stepper 03 - Animated Progress Indicators",
+    description:
+      "Stepper with spring-based progress line, traveling dot, pulsing active badge, icon to checkmark morphing, and reduced-motion support for guided multi-step workflows.",
+    type: "registry:component",
+    dependencies: ["lucide-react", "motion"],
+    registryDependencies: ["button", "separator"],
+    files: [
+      {
+        path: "src/components/shadcn-space/stepper/stepper-03.tsx",
+        type: "registry:component",
+        target: "components/shadcn-space/stepper/stepper-03.tsx",
+      },
+    ],
+    category: categories["stepper"],
+    isNew:true
+  },
+  {
+    name: "stepper-04",
+    title: "Stepper 04 - Segmented Progress Pill",
+    description:
+      "Minimal segmented stepper with a spring-animated progress pill sliding across rounded segments, clickable step labels, and gentle content transitions.",
+    type: "registry:component",
+    dependencies: ["lucide-react", "motion"],
+    registryDependencies: ["button", "separator"],
+    files: [
+      {
+        path: "src/components/shadcn-space/stepper/stepper-04.tsx",
+        type: "registry:component",
+        target: "components/shadcn-space/stepper/stepper-04.tsx",
+      },
+    ],
+    category: categories["stepper"],
+    isNew:true
+
   },
   {
     name: "input-group-01",
@@ -6030,7 +6904,7 @@ export const components = [
       },
     ],
     category: categories["input-group"],
-    isNew: true,
+    
   },
   {
     name: "input-group-02",
@@ -6048,7 +6922,7 @@ export const components = [
       },
     ],
     category: categories["input-group"],
-    isNew: true,
+    
   },
   {
     name: "toggle-group-01",
@@ -6066,7 +6940,7 @@ export const components = [
       },
     ],
     category: categories["toggle-group"],
-    isNew: true,
+    
   },
   {
     name: "toggle-group-02",
@@ -6084,7 +6958,7 @@ export const components = [
       },
     ],
     category: categories["toggle-group"],
-    isNew: true,
+    
   },
   {
     name: "drawer-01",
@@ -6102,7 +6976,7 @@ export const components = [
       },
     ],
     category: categories["drawer"],
-    isNew: true,
+    
   },
   {
     name: "drawer-02",
@@ -6127,7 +7001,7 @@ export const components = [
       },
     ],
     category: categories["drawer"],
-    isNew: true,
+    
   },
   {
     name: "rating-01",
@@ -6145,7 +7019,7 @@ export const components = [
       },
     ],
     category: categories["rating"],
-    isNew: true,
+    
   },
   {
     name: "rating-02",
@@ -6163,7 +7037,7 @@ export const components = [
       },
     ],
     category: categories["rating"],
-    isNew: true,
+    
   },
   {
     name: "rating-03",
@@ -6181,6 +7055,247 @@ export const components = [
       },
     ],
     category: categories["rating"],
+    
+  },
+  {
+    name: "sortable-01",
+    title: "Sortable 01 - Sortable Asset List",
+    description:
+      "A drag-and-drop sortable asset list component using @dnd-kit with drag handles, file type icons, status badges, and smooth reordering feedback.",
+    type: "registry:component",
+    dependencies: ["@dnd-kit/core", "@dnd-kit/sortable", "@dnd-kit/utilities"],
+    registryDependencies: ["badge", "item"],
+    files: [
+      {
+        path: "src/components/shadcn-space/sortable/sortable-01.tsx",
+        type: "registry:component",
+        target: "components/shadcn-space/sortable/sortable-01.tsx",
+      },
+    ],
+    category: categories["sortable"],
     isNew: true,
+  },
+  {
+    name: "sortable-02",
+    title: "Sortable 02 - Sortable Asset Grid",
+    description:
+      "A drag-and-drop sortable asset grid component using @dnd-kit with type badges, file sizes, and smooth reordering feedback across a responsive card layout.",
+    type: "registry:component",
+    dependencies: ["@dnd-kit/core", "@dnd-kit/sortable", "@dnd-kit/utilities"],
+    registryDependencies: ["badge"],
+    files: [
+      {
+        path: "src/components/shadcn-space/sortable/sortable-02.tsx",
+        type: "registry:component",
+        target: "components/shadcn-space/sortable/sortable-02.tsx",
+      },
+    ],
+    category: categories["sortable"],
+    isNew: true,
+  },
+  {
+    name: "sortable-03",
+    title: "Sortable 03 - Sortable Grouped List",
+    description:
+      "A nested drag-and-drop sortable component using @dnd-kit for reordering option groups and the items within each group, with drag handles on both group and item rows.",
+    type: "registry:component",
+    dependencies: ["@dnd-kit/core", "@dnd-kit/sortable", "@dnd-kit/utilities"],
+    registryDependencies: [],
+    files: [
+      {
+        path: "src/components/shadcn-space/sortable/sortable-03.tsx",
+        type: "registry:component",
+        target: "components/shadcn-space/sortable/sortable-03.tsx",
+      },
+    ],
+    category: categories["sortable"],
+    isNew: true,
+  },
+  {
+    name: "sortable-04",
+    title: "Sortable 04 - Sortable Media Library Grid",
+    description:
+      "A drag-and-drop sortable media library component using @dnd-kit for reordering image assets by display priority within a responsive card grid.",
+    type: "registry:component",
+    dependencies: ["@dnd-kit/core", "@dnd-kit/sortable", "@dnd-kit/utilities"],
+    registryDependencies: [],
+    files: [
+      {
+        path: "src/components/shadcn-space/sortable/sortable-04.tsx",
+        type: "registry:component",
+        target: "components/shadcn-space/sortable/sortable-04.tsx",
+      },
+    ],
+    category: categories["sortable"],
+    isNew: true,
+  },
+  {
+    name: "sortable-05",
+    title: "Sortable 05 - Sortable Numbered Checklist",
+    description:
+      "A drag-and-drop sortable numbered checklist component using @dnd-kit with pill-shaped rows, a drag handle, and auto-updating step numbers as items are reordered.",
+    type: "registry:component",
+    dependencies: ["@dnd-kit/core", "@dnd-kit/sortable", "@dnd-kit/utilities"],
+    registryDependencies: [],
+    files: [
+      {
+        path: "src/components/shadcn-space/sortable/sortable-05.tsx",
+        type: "registry:component",
+        target: "components/shadcn-space/sortable/sortable-05.tsx",
+      },
+    ],
+    category: categories["sortable"],
+    isNew: true,
+  },
+  {
+    name: "sortable-06",
+    title: "Sortable 06 - Sortable Music Queue",
+    description:
+      "A drag-and-drop sortable music queue component using @dnd-kit with track artwork, artist and album details, a now playing badge, play count, and duration.",
+    type: "registry:component",
+    dependencies: ["@dnd-kit/core", "@dnd-kit/sortable", "@dnd-kit/utilities"],
+    registryDependencies: [],
+    files: [
+      {
+        path: "src/components/shadcn-space/sortable/sortable-06.tsx",
+        type: "registry:component",
+        target: "components/shadcn-space/sortable/sortable-06.tsx",
+      },
+    ],
+    category: categories["sortable"],
+    isNew: true,
+  },
+
+  {
+    name: "aspect-ratio-01",
+    title: "Aspect Ratio 01 - Default",
+    description: "A simple image constrained to a 16:9 aspect ratio.",
+    type: "registry:component",
+    dependencies: [],
+    registryDependencies: ["aspect-ratio"],
+    files: [
+      {
+        path: "src/components/shadcn-space/aspect-ratio/aspect-ratio-01.tsx",
+        type: "registry:component",
+        target: "components/shadcn-space/aspect-ratio/aspect-ratio-01.tsx",
+      },
+    ],
+    category: categories["aspect-ratio"],
+    isNew: true,
+
+  },
+  {
+    name: "aspect-ratio-02",
+    title: "Aspect Ratio 02 - Square Grid",
+    description:
+      "A responsive photo gallery grid using square aspect ratio tiles with a hover zoom effect.",
+    type: "registry:component",
+    dependencies: [],
+    registryDependencies: ["aspect-ratio"],
+    files: [
+      {
+        path: "src/components/shadcn-space/aspect-ratio/aspect-ratio-02.tsx",
+        type: "registry:component",
+        target: "components/shadcn-space/aspect-ratio/aspect-ratio-02.tsx",
+      },
+    ],
+    category: categories["aspect-ratio"],
+    isNew: true,
+
+  },
+  {
+    name: "aspect-ratio-03",
+    title: "Aspect Ratio 03 - Caption Overlay",
+    description:
+      "A portrait aspect ratio card with a gradient overlay and caption text.",
+    type: "registry:component",
+    dependencies: [],
+    registryDependencies: ["aspect-ratio"],
+    files: [
+      {
+        path: "src/components/shadcn-space/aspect-ratio/aspect-ratio-03.tsx",
+        type: "registry:component",
+        target: "components/shadcn-space/aspect-ratio/aspect-ratio-03.tsx",
+      },
+    ],
+    category: categories["aspect-ratio"],
+    isNew: true,
+
+  },
+  {
+    name: "aspect-ratio-04",
+    title: "Aspect Ratio 04 - Video Thumbnail",
+    description:
+      "A 16:9 video thumbnail with a play button overlay and duration badge.",
+    type: "registry:component",
+    dependencies: ["lucide-react"],
+    registryDependencies: ["aspect-ratio"],
+    files: [
+      {
+        path: "src/components/shadcn-space/aspect-ratio/aspect-ratio-04.tsx",
+        type: "registry:component",
+        target: "components/shadcn-space/aspect-ratio/aspect-ratio-04.tsx",
+      },
+    ],
+    category: categories["aspect-ratio"],
+    isNew: true,
+
+  },
+  {
+    name: "aspect-ratio-05",
+    title: "Aspect Ratio 05 - Ratio Switcher",
+    description:
+      "An interactive demo that lets you switch an image between common aspect ratios like 1:1, 4:3, 16:9, and 21:9.",
+    type: "registry:component",
+    dependencies: [],
+    registryDependencies: ["aspect-ratio", "button"],
+    files: [
+      {
+        path: "src/components/shadcn-space/aspect-ratio/aspect-ratio-05.tsx",
+        type: "registry:component",
+        target: "components/shadcn-space/aspect-ratio/aspect-ratio-05.tsx",
+      },
+    ],
+    category: categories["aspect-ratio"],
+    isNew: true,
+
+  },
+  {
+    name: "aspect-ratio-06",
+    title: "Aspect Ratio 06 - Product Card",
+    description:
+      "A product card using a 4:5 aspect ratio image with a discount badge and pricing details.",
+    type: "registry:component",
+    dependencies: [],
+    registryDependencies: ["aspect-ratio", "badge"],
+    files: [
+      {
+        path: "src/components/shadcn-space/aspect-ratio/aspect-ratio-06.tsx",
+        type: "registry:component",
+        target: "components/shadcn-space/aspect-ratio/aspect-ratio-06.tsx",
+      },
+    ],
+    category: categories["aspect-ratio"],
+    isNew: true,
+
+  },
+  {
+    name: "questionnaire-01",
+    title: "Questionnaire 01 - Topic-Based Assessment",
+    description:
+      "An interactive physics concept assessment component with topic-based accordion sections and multi-step questionnaire questions.",
+    type: "registry:component",
+    dependencies: ["lucide-react"],
+    registryDependencies: ["accordion", "button", "badge", "card", "separator","questionnaire"],
+    files: [
+      {
+        path: "src/components/shadcn-space/questionnaire/questionnaire-01.tsx",
+        type: "registry:component",
+        target: "components/shadcn-space/questionnaire/questionnaire-01.tsx",
+      },
+    ],
+    category: categories["questionnaire"],
+    isNew: true,
+
   },
 ];
