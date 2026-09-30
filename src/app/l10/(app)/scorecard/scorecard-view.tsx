@@ -263,7 +263,7 @@ function EditableCell({
           pending && "opacity-50",
         )}
       >
-        {cell ? nf.format(cell.value) : "–"}
+        {cell ? `${nf.format(cell.value)}${metric.query_key === "return_invoice_pct" ? "%" : ""}` : "–"}
         {cell?.note ? (
           <span
             aria-hidden
@@ -620,10 +620,13 @@ function GroupTable({
               {orderedRows.map((m, idx) => {
                 const cells = cellsFor(m);
                 const vals = Object.values(cells).map((c) => c.value);
-                const avg = vals.length
+                // A returns/revenue ratio must be recomputed from its amounts;
+                // summing or taking a simple mean of period rates is misleading.
+                const isReturnsRatio = m.query_key === "return_invoice_pct";
+                const avg = vals.length && !isReturnsRatio
                   ? vals.reduce((a, b) => a + b, 0) / vals.length
                   : null;
-                const total = vals.length
+                const total = vals.length && !isReturnsRatio
                   ? vals.reduce((a, b) => a + b, 0)
                   : null;
                 return (
@@ -804,6 +807,7 @@ function GroupTable({
                     ) : null}
                     {cols.total ? (
                       <div
+                        title={isReturnsRatio ? "Calculated separately for each period; percentages cannot be added." : undefined}
                         className="px-2 text-right text-xs tabular-nums"
                         style={{ width: cols.total }}
                       >

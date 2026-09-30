@@ -33,6 +33,7 @@ export interface MetricRow {
   seq: number;
   group_name: string | null;
   title: string;
+  query_key: string | null;
   unit: string | null;
   goal_text: string | null;
   goal_op: ">=" | "<=" | "band" | null;
@@ -401,7 +402,7 @@ export async function getScorecard(
   const starts = periods.map((p) => p.start);
   const rows = (await sql`
     select
-      m.id, m.seq, m.group_name, m.title, m.unit, m.goal_text,
+      m.id, m.seq, m.group_name, m.title, m.query_key, m.unit, m.goal_text,
       m.goal_op, m.goal_value, m.goal_min, m.goal_max, m.quarterly_target,
       m.owner_id, o.full_name as owner_name,
       coalesce((
